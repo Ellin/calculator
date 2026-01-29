@@ -7,3 +7,35 @@
 * {
     margin: 0;
 }
+
+.calculator {
+    width: clamp(300px, 90vw, 500px);
+    background-color: pink;
+    border: 1px solid black;
+    padding: 1em;
+}
+
+.keypad {
+    background-color: yellow;
+}
+
+.keypad-row {
+    margin: 1em 0;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.calculator button {
+    flex: 1;
+    width: 50px;
+    aspect-ratio: 1;
+    font-size: clamp(1em, 5vw, 3em);
+}
+
+.display {
+    height: 2em;
+    font-size: clamp(1em, 5vw, 3em);
+    background-color: rgb(231, 255, 253);
+    border: 1px solid black;
+}
