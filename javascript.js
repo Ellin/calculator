@@ -1,11 +1,45 @@
 'use strict'
 
+let number1 = 0;
+let number2 = 0;
+let operator;
+
+const display = document.querySelector('.display');
 const buttons = document.querySelectorAll('button');
 
 buttons.forEach(button => {
     button.addEventListener('click', (e) => {
         const buttonId = e.target.id;
-        alert(`do something with ${buttonId}`);
+        const buttonText = e.target.innerText;
+        const buttonNumber = Number(buttonText);
+
+        if (buttonNumber || buttonNumber === 0) {
+            if (operator) {
+                number2 = Number(number2 + buttonText);
+                alert(`num2 ${number2}`);
+            } else {
+                number1 = Number(number1 + buttonText);
+                alert(`num1 ${number1}`);
+            }
+            display.innerText += buttonText;
+            return;
+        } 
+
+        switch (buttonId) {
+            case 'add':
+                operator = add;
+            case 'subtract':
+                operator = subtract;
+            case 'multiply':
+                operator = multiply;
+            case 'divide':
+                operator = divide;
+            case 'power':
+                operator = pow;
+            default:
+                display.innerText += buttonText;
+        }
+        
     });
 });
 
