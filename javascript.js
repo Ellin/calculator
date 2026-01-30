@@ -8,6 +8,10 @@ buttons.forEach(button => {
         alert(`do something with ${buttonId}`);
     });
 });
+
+function operate(number1, number2, operatorFn) {
+    return operatorFn(number1, number2);
+}
  
 function add(x, y) {
     const sum = x + y;
@@ -37,6 +41,3 @@ function pow(x, y) {
     const power = x ** y;
     return power;
 }
-
-
-
