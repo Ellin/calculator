@@ -44,7 +44,7 @@ buttons.forEach(button => {
                 break;
             case 'power':
                 operator = pow;
-                display.innerText += buttonText;
+                display.innerText += '^';
                 break;
             case 'equal': 
                 number1 = operate(number1, number2, operator);
