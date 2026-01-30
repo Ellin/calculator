@@ -82,12 +82,31 @@ buttons.forEach(button => {
                 number2 = 0;
                 operator = null;
                 break;
+            case 'backspace':
+                if (displayText === '') return;
+
+                const lastChar = displayText.slice(-1);
+                if (Object.values(operators).includes(lastChar)) { // operator is last character
+                    operator = null;
+                } else if (operator) { // operator is between two numbers
+                    number2 = removeDigit(number2);
+                } else { // just a number
+                    number1 = removeDigit(number1);
+                }
+                display.innerText = displayText.slice(0, -1);
+                break;
             case 'clear':
                 resetCalculator();
+                break;
         }
         
     });
 });
+
+function removeDigit(number) {
+    return Number(number.toString().slice(0, -1));
+}
+
 
 function resetCalculator() {
     display.innerText = '';
