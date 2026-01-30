@@ -11,6 +11,7 @@ let operators = {
     power: '^',
 }
 
+const errorMessage = "error";
 
 const display = document.querySelector('.display');
 const buttons = document.querySelectorAll('button');
@@ -22,6 +23,9 @@ buttons.forEach(button => {
         const buttonNumber = Number(buttonText);
         const displayText = display.innerText;
 
+        if (displayText === errorMessage) {
+            resetCalculator();
+        }
 
         if (buttonNumber || buttonNumber === 0) {
             if (operator) {
@@ -43,7 +47,7 @@ buttons.forEach(button => {
                 if (lastChar >= 0 && lastChar <= 9) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
                     number1 = operate(number1, number2, operator);
                     number2 = 0;
-                    display.innerText = number1 + operators[buttonId];
+                    display.innerText = number1 + (number1 === errorMessage ? '' : operators[buttonId]);
                 } else { // last character is already an operator
                     display.innerText = displayText.slice(0, -1) + operators[buttonId]; // remove previous operator and add new
                 }
@@ -79,14 +83,18 @@ buttons.forEach(button => {
                 operator = null;
                 break;
             case 'clear':
-                display.innerText = '';
-                number1 = 0;
-                number2 = 0;
-                operator = null;
+                resetCalculator();
         }
         
     });
 });
+
+function resetCalculator() {
+    display.innerText = '';
+    number1 = 0;
+    number2 = 0;
+    operator = null;
+}
 
 function operate(number1, number2, operatorFn) {
     return operatorFn(number1, number2);
@@ -110,7 +118,7 @@ function multiply(x, y) {
 function divide(x, y) {
     if (y === 0) {
         alert(`Can't divide by zero!`);
-        return 'error';
+        return errorMessage;
     }
     const quotient = x / y;
     return quotient;
