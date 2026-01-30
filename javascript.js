@@ -3,6 +3,14 @@
 let number1 = 0;
 let number2 = 0;
 let operator;
+let operators = {
+    add: '+',
+    subtract: '-',
+    multiply: '×',
+    divide: '÷',
+    power: '^',
+}
+
 
 const display = document.querySelector('.display');
 const buttons = document.querySelectorAll('button');
@@ -25,27 +33,43 @@ buttons.forEach(button => {
             return;
         } 
 
+        if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
+    
+            if (operator) { // if there is an existing operator
+                const lastChar = display.innerText.slice(-1);
+
+                if (lastChar >= 0 && lastChar <= 9) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
+                    number1 = operate(number1, number2, operator);
+                    number2 = 0;
+                    display.innerText = number1 + operators[buttonId];
+                } else { // last character is already an operator
+                    display.innerText = display.innerText.slice(0, -1) + operators[buttonId]; // remove previous operator and add new
+                }
+            } else {
+                display.innerText += operators[buttonId];
+            }
+
+
+            switch (buttonId) { // future refactor alternative: operator = operators[buttonId].fn 
+                case 'add':
+                    operator = add;
+                    return;
+                case 'subtract':
+                    operator = subtract;
+                    return;
+                case 'multiply':
+                    operator = multiply;
+                    return;
+                case 'divide':
+                    operator = divide;
+                    return;
+                case 'power':
+                    operator = pow;
+                    return;
+            }
+        }
+
         switch (buttonId) {
-            case 'add':
-                operator = add;
-                display.innerText += buttonText;
-                break;
-            case 'subtract':
-                operator = subtract;
-                display.innerText += buttonText;
-                break;
-            case 'multiply':
-                operator = multiply;
-                display.innerText += buttonText;
-                break;
-            case 'divide':
-                operator = divide;
-                display.innerText += buttonText;
-                break;
-            case 'power':
-                operator = pow;
-                display.innerText += '^';
-                break;
             case 'equal': 
                 number1 = operate(number1, number2, operator);
                 display.innerText = number1;
