@@ -16,10 +16,10 @@ buttons.forEach(button => {
         if (buttonNumber || buttonNumber === 0) {
             if (operator) {
                 number2 = Number(number2 + buttonText);
-                alert(`num2 ${number2}`);
+                // alert(`num2 ${number2}`);
             } else {
                 number1 = Number(number1 + buttonText);
-                alert(`num1 ${number1}`);
+                // alert(`num1 ${number1}`);
             }
             display.innerText += buttonText;
             return;
@@ -49,6 +49,12 @@ buttons.forEach(button => {
             case 'equal': 
                 number1 = operate(number1, number2, operator);
                 display.innerText = number1;
+                number2 = 0;
+                operator = null;
+                break;
+            case 'clear':
+                display.innerText = '';
+                number1 = 0;
                 number2 = 0;
                 operator = null;
         }
