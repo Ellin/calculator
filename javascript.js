@@ -28,16 +28,29 @@ buttons.forEach(button => {
         switch (buttonId) {
             case 'add':
                 operator = add;
+                display.innerText += buttonText;
+                break;
             case 'subtract':
                 operator = subtract;
+                display.innerText += buttonText;
+                break;
             case 'multiply':
                 operator = multiply;
+                display.innerText += buttonText;
+                break;
             case 'divide':
                 operator = divide;
+                display.innerText += buttonText;
+                break;
             case 'power':
                 operator = pow;
-            default:
                 display.innerText += buttonText;
+                break;
+            case 'equal': 
+                number1 = operate(number1, number2, operator);
+                display.innerText = number1;
+                number2 = 0;
+                operator = null;
         }
         
     });
