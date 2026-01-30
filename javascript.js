@@ -20,6 +20,8 @@ buttons.forEach(button => {
         const buttonId = e.target.id;
         const buttonText = e.target.innerText;
         const buttonNumber = Number(buttonText);
+        const displayText = display.innerText;
+
 
         if (buttonNumber || buttonNumber === 0) {
             if (operator) {
@@ -36,14 +38,14 @@ buttons.forEach(button => {
         if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
     
             if (operator) { // if there is an existing operator
-                const lastChar = display.innerText.slice(-1);
+                const lastChar = displayText.slice(-1);
 
                 if (lastChar >= 0 && lastChar <= 9) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
                     number1 = operate(number1, number2, operator);
                     number2 = 0;
                     display.innerText = number1 + operators[buttonId];
                 } else { // last character is already an operator
-                    display.innerText = display.innerText.slice(0, -1) + operators[buttonId]; // remove previous operator and add new
+                    display.innerText = displayText.slice(0, -1) + operators[buttonId]; // remove previous operator and add new
                 }
             } else {
                 display.innerText += operators[buttonId];
