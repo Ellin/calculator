@@ -43,6 +43,8 @@ buttons.forEach(button => {
         } 
 
         if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
+
+            if (number1 === null) return;
     
             if (operator) { // if there is an existing operator
                 const lastChar = displayText.slice(-1);
