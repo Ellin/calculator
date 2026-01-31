@@ -1,7 +1,7 @@
 'use strict'
 
-let number1 = 0;
-let number2 = 0;
+let number1 = null;
+let number2 = null;
 let operator = null;
 let result = null;
 let operators = {
@@ -32,10 +32,10 @@ buttons.forEach(button => {
             if(result !== null && !operator) resetCalculator();
 
             if (operator) {
-                number2 = Number(number2 + buttonText);
+                number2 = Number((number2 === null ? '' : number2) + buttonText);
                 // alert(`num2 ${number2}`);
             } else {
-                number1 = Number(number1 + buttonText);
+                number1 = Number((number1 === null ? '' : number1) + buttonText);
                 // alert(`num1 ${number1}`);
             }
             display.innerText += buttonText;
@@ -50,7 +50,7 @@ buttons.forEach(button => {
                 if (lastChar >= 0 && lastChar <= 9) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
                     result = operate(number1, number2, operator);
                     number1 = result;
-                    number2 = 0;
+                    number2 = null;
                     display.innerText = number1 + (number1 === errorMessage ? '' : operators[buttonId]);
                 } else { // last character is already an operator
                     display.innerText = displayText.slice(0, -1) + operators[buttonId]; // remove previous operator and add new
@@ -81,10 +81,11 @@ buttons.forEach(button => {
 
         switch (buttonId) {
             case 'equal': 
+                if (number2 === null) return;
                 result = operate(number1, number2, operator);
                 display.innerText = result;
                 number1 = result;
-                number2 = 0;
+                number2 = null;
                 operator = null;
                 break;
             case 'backspace':
@@ -115,8 +116,8 @@ function removeDigit(number) {
 
 function resetCalculator() {
     display.innerText = '';
-    number1 = 0;
-    number2 = 0;
+    number1 = null;
+    number2 = null;
     operator = null;
     result = null;
 }
