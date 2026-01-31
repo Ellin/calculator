@@ -2,7 +2,8 @@
 
 let number1 = 0;
 let number2 = 0;
-let operator;
+let operator = null;
+let result = null;
 let operators = {
     add: '+',
     subtract: '-',
@@ -27,7 +28,9 @@ buttons.forEach(button => {
             resetCalculator();
         }
 
-        if (buttonNumber || buttonNumber === 0) {
+        if (buttonNumber || buttonNumber === 0) { // button pressed is a number
+            if(result !== null && !operator) resetCalculator();
+
             if (operator) {
                 number2 = Number(number2 + buttonText);
                 // alert(`num2 ${number2}`);
@@ -45,7 +48,8 @@ buttons.forEach(button => {
                 const lastChar = displayText.slice(-1);
 
                 if (lastChar >= 0 && lastChar <= 9) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
-                    number1 = operate(number1, number2, operator);
+                    result = operate(number1, number2, operator);
+                    number1 = result;
                     number2 = 0;
                     display.innerText = number1 + (number1 === errorMessage ? '' : operators[buttonId]);
                 } else { // last character is already an operator
@@ -77,8 +81,9 @@ buttons.forEach(button => {
 
         switch (buttonId) {
             case 'equal': 
-                number1 = operate(number1, number2, operator);
-                display.innerText = number1;
+                result = operate(number1, number2, operator);
+                display.innerText = result;
+                number1 = result;
                 number2 = 0;
                 operator = null;
                 break;
@@ -113,6 +118,7 @@ function resetCalculator() {
     number1 = 0;
     number2 = 0;
     operator = null;
+    result = null;
 }
 
 function operate(number1, number2, operatorFn) {
