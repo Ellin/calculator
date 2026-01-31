@@ -5,12 +5,32 @@ let number2 = null;
 let operator = null;
 let result = null;
 let operators = {
-    add: '+',
-    subtract: '-',
-    multiply: '×',
-    divide: '÷',
-    power: '^',
-}
+    add: {
+        symbol: '+',
+        fn: (x, y) => x + y,
+    },
+    subtract: {
+        symbol: '-',
+        fn: (x, y) => x - y,
+    },
+    multiply: {
+        symbol: '×',
+        fn: (x, y) => x * y,
+    },
+    divide: {
+        symbol: '÷',
+        fn: (x, y) => {
+            if (y === 0) return errorMessage;
+            return x / y;
+        },
+    },
+    power: {
+        symbol: '^',
+        fn: (x, y) => x ** y,
+    },
+};
+
+let operatorSymbols = [operators.add.symbol, operators.subtract.symbol, operators.multiply.symbol, operators.divide.symbol, operators.power.symbol];
 
 const errorMessage = "error";
 
@@ -53,32 +73,16 @@ buttons.forEach(button => {
                     result = operate(number1, number2, operator);
                     number1 = result;
                     number2 = null;
-                    display.innerText = number1 + (number1 === errorMessage ? '' : operators[buttonId]);
+                    display.innerText = number1 + (number1 === errorMessage ? '' : operators[buttonId].symbol);
                 } else { // last character is already an operator
-                    display.innerText = displayText.slice(0, -1) + operators[buttonId]; // remove previous operator and add new
+                    display.innerText = displayText.slice(0, -1) + operators[buttonId].symbol; // remove previous operator and add new
                 }
             } else {
-                display.innerText += operators[buttonId];
+                display.innerText += operators[buttonId].symbol;
             }
 
-
-            switch (buttonId) { // future refactor alternative: operator = operators[buttonId].fn 
-                case 'add':
-                    operator = add;
-                    return;
-                case 'subtract':
-                    operator = subtract;
-                    return;
-                case 'multiply':
-                    operator = multiply;
-                    return;
-                case 'divide':
-                    operator = divide;
-                    return;
-                case 'power':
-                    operator = pow;
-                    return;
-            }
+            operator = operators[buttonId].fn;
+            return;
         }
 
         switch (buttonId) {
@@ -94,7 +98,7 @@ buttons.forEach(button => {
                 if (displayText === '') return;
 
                 const lastChar = displayText.slice(-1);
-                if (Object.values(operators).includes(lastChar)) { // operator is last character
+                if (operatorSymbols.includes(lastChar)) { // operator is last character 
                     operator = null;
                 } else if (operator) { // operator is between two numbers
                     number2 = removeDigit(number2);
@@ -115,7 +119,6 @@ function removeDigit(number) {
     return Number(number.toString().slice(0, -1));
 }
 
-
 function resetCalculator() {
     display.innerText = '';
     number1 = null;
@@ -126,33 +129,4 @@ function resetCalculator() {
 
 function operate(number1, number2, operatorFn) {
     return operatorFn(number1, number2);
-}
- 
-function add(x, y) {
-    const sum = x + y;
-    return sum;
-}
-
-function subtract(x, y) {
-    const difference = x - y;
-    return difference
-}
-
-function multiply(x, y) {
-    const product = x * y;
-    return product;
-}
-
-function divide(x, y) {
-    if (y === 0) {
-        alert(`Can't divide by zero!`);
-        return errorMessage;
-    }
-    const quotient = x / y;
-    return quotient;
-}
-
-function pow(x, y) {
-    const power = x ** y;
-    return power;
 }
