@@ -71,14 +71,10 @@ buttons.forEach(button => {
 
             if (number1 === null) return;
     
-            if (operator) { // if there is an existing operator
-                const lastChar = displayText.slice(-1);
-
-                if (lastChar >= 0 && lastChar <= 9) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
-                    result = operate(number1, number2, operators[operator].fn);
-                    number1 = result;
-                    number2 = null;
-                }
+            if (number2 !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
+                result = operate(number1, number2, operators[operator].fn);
+                number1 = result;
+                number2 = null;
             } 
 
             operator = buttonId;
