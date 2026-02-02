@@ -1,7 +1,21 @@
 'use strict'
 
-let number1 = null;
-let number2 = null;
+let number1 = {
+    value: null,
+    sign: 1,
+    computedValue: function() {
+        return this.value * this.sign;
+    }
+};
+
+let number2 = {
+    value: null,
+    sign: 1,
+    computedValue: function() {
+        return this.value * this.sign;
+    }
+};
+
 let operator = null; // holds operator names (e.g. 'add')
 let result = null;
 let isError = false;
@@ -57,11 +71,9 @@ buttons.forEach(button => {
             if(result !== null && !operator) resetCalculator();
 
             if (operator) {
-                number2 = Number((number2 === null ? '' : number2) + buttonText);
-                // alert(`num2 ${number2}`);
+                number2.value = Number((number2.value === null ? '' : number2.value) + buttonText);
             } else {
-                number1 = Number((number1 === null ? '' : number1) + buttonText);
-                // alert(`num1 ${number1}`);
+                number1.value = Number((number1.value === null ? '' : number1.value) + buttonText);
             }
             display.innerText = createDisplayString();
             return;
@@ -69,12 +81,12 @@ buttons.forEach(button => {
 
         if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
 
-            if (number1 === null) return;
+            if (number1.value === null) return;
     
-            if (number2 !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
-                result = operate(number1, number2, operators[operator].fn);
-                number1 = result;
-                number2 = null;
+            if (number2.value !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
+                result = operate(number1.computedValue(), number2.computedValue(), operators[operator].fn);
+                number1.value = result;
+                number2.value = null;
             } 
 
             operator = buttonId;
@@ -84,22 +96,22 @@ buttons.forEach(button => {
 
         switch (buttonId) {
             case 'equal': 
-                if (number2 === null) return;
-                result = operate(number1, number2, operators[operator].fn);
-                number1 = result;
-                number2 = null;
+                if (number2.value === null) return;
+                result = operate(number1.computedValue(), number2.computedValue(), operators[operator].fn);
+                number1.value = result;
+                number2.value = null;
                 operator = null;
                 display.innerText = createDisplayString();
                 break;
             case 'backspace':
                 if (displayText === '') return;
 
-                if (number2 !== null) {
-                    number2 = removeDigit(number2);
+                if (number2.value !== null) {
+                    number2.value = removeDigit(number2.value);
                 } else if (operator) {
                     operator = null;
                 } else {
-                    number1 = removeDigit(number1);
+                    number1.value = removeDigit(number1.value);
                 }
                 display.innerText = createDisplayString();
                 break;
@@ -115,8 +127,8 @@ function createDisplayString() {
     if (isError) return errorMessage;
 
     const operatorSymbol = operator ? operators[operator].symbol : '';
-    const number1String = (number1 !== null) ? String(number1) : '';
-    const number2String = (number2 !== null) ? String(number2) : '';
+    const number1String = (number1.value !== null) ? String(number1.value) : '';
+    const number2String = (number2.value !== null) ? String(number2.value) : '';
     
     return number1String + operatorSymbol + number2String;
 }
@@ -129,8 +141,8 @@ function removeDigit(number) {
 
 function resetCalculator() {
     display.innerText = '';
-    number1 = null;
-    number2 = null;
+    number1.value = null;
+    number2.value= null;
     operator = null;
     result = null;
     isError = false;
