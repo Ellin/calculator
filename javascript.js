@@ -2,8 +2,10 @@
 
 let number1 = null;
 let number2 = null;
-let operator = null;
+let operator = null; // holds operator names (e.g. 'add')
 let result = null;
+let isError = false;
+
 let operators = {
     add: {
         symbol: '+',
@@ -20,7 +22,10 @@ let operators = {
     divide: {
         symbol: '÷',
         fn: (x, y) => {
-            if (y === 0) return errorMessage;
+            if (y === 0) {
+                isError = true;
+                return;
+            }
             return x / y;
         },
     },
@@ -44,7 +49,7 @@ buttons.forEach(button => {
         const buttonNumber = Number(buttonText);
         const displayText = display.innerText;
 
-        if (displayText === errorMessage) {
+        if (isError) {
             resetCalculator();
         }
 
@@ -58,7 +63,7 @@ buttons.forEach(button => {
                 number1 = Number((number1 === null ? '' : number1) + buttonText);
                 // alert(`num1 ${number1}`);
             }
-            display.innerText += buttonText;
+            display.innerText = createDisplayString();
             return;
         } 
 
@@ -70,42 +75,37 @@ buttons.forEach(button => {
                 const lastChar = displayText.slice(-1);
 
                 if (lastChar >= 0 && lastChar <= 9) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
-                    result = operate(number1, number2, operator);
+                    result = operate(number1, number2, operators[operator].fn);
                     number1 = result;
                     number2 = null;
-                    display.innerText = number1 + (number1 === errorMessage ? '' : operators[buttonId].symbol);
-                } else { // last character is already an operator
-                    display.innerText = displayText.slice(0, -1) + operators[buttonId].symbol; // remove previous operator and add new
                 }
-            } else {
-                display.innerText += operators[buttonId].symbol;
-            }
+            } 
 
-            operator = operators[buttonId].fn;
+            operator = buttonId;
+            display.innerText = createDisplayString();
             return;
         }
 
         switch (buttonId) {
             case 'equal': 
                 if (number2 === null) return;
-                result = operate(number1, number2, operator);
-                display.innerText = result;
+                result = operate(number1, number2, operators[operator].fn);
                 number1 = result;
                 number2 = null;
                 operator = null;
+                display.innerText = createDisplayString();
                 break;
             case 'backspace':
                 if (displayText === '') return;
 
-                const lastChar = displayText.slice(-1);
-                if (operatorSymbols.includes(lastChar)) { // operator is last character 
-                    operator = null;
-                } else if (operator) { // operator is between two numbers
+                if (number2 !== null) {
                     number2 = removeDigit(number2);
-                } else { // just a number
+                } else if (operator) {
+                    operator = null;
+                } else {
                     number1 = removeDigit(number1);
                 }
-                display.innerText = displayText.slice(0, -1);
+                display.innerText = createDisplayString();
                 break;
             case 'clear':
                 resetCalculator();
@@ -115,8 +115,20 @@ buttons.forEach(button => {
     });
 });
 
+function createDisplayString() {
+    if (isError) return errorMessage;
+
+    const operatorSymbol = operator ? operators[operator].symbol : '';
+    const number1String = (number1 !== null) ? String(number1) : '';
+    const number2String = (number2 !== null) ? String(number2) : '';
+    
+    return number1String + operatorSymbol + number2String;
+}
+
 function removeDigit(number) {
-    return Number(number.toString().slice(0, -1));
+    // Note: improve for handling negative numbers in future
+    if (number >= -9 && number < 10) return null;
+    return Number(number.toString().slice(0, -1)); 
 }
 
 function resetCalculator() {
@@ -125,6 +137,7 @@ function resetCalculator() {
     number2 = null;
     operator = null;
     result = null;
+    isError = false;
 }
 
 function operate(number1, number2, operatorFn) {
