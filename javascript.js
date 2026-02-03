@@ -57,7 +57,7 @@ let operatorSymbols = [operators.add.symbol, operators.subtract.symbol, operator
 
 const errorMessage = "error";
 
-const display = document.querySelector('.display');
+const display = document.querySelector('.display-text');
 const buttons = document.querySelectorAll('button');
 
 buttons.forEach(button => {
