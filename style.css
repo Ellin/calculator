@@ -45,7 +45,7 @@ html {
 .display {
     display: flex;
     align-items: center;
-    height: 2em;
+    height: clamp(5rem, 20vw, 7rem);
     font-size: clamp(1em, 5vw, 3.2em);
     background-color: rgb(231, 255, 253);
     border: 1px solid black;
