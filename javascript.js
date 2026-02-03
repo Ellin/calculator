@@ -132,11 +132,14 @@ function createDisplayString() {
 
     const operatorSymbol = operator ? operators[operator].symbol : '';
     const number1Sign = number1.sign < 0 ? '-' : '';
-    const number2Sign = number2.sign < 0 ? '-' : '';
-    const number1String = (number1.value !== null) ? String(number1.value) : '';
-    const number2String = (number2.value !== null) ? String(number2.value) : '';
-    
-    return number1Sign + number1String + operatorSymbol + number2Sign + number2String;
+    const number1Value = (number1.value !== null) ? number1.value : '';
+    const number2Value = (number2.value !== null) ? number2.value : '';
+
+    if (number2.sign < 0) {
+        return number1Sign + number1Value + operatorSymbol + '(-' + number2Value + ')';
+    } else {
+        return number1Sign + number1Value + operatorSymbol + number2Value;
+    }
 }
 
 function removeLastDigit(number) {
