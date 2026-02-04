@@ -20,6 +20,7 @@ let number2 = {
     }
 };
 
+const displayLimit = 13; // max # of characters
 let operator = null; // holds operator names (e.g. 'add')
 let result = null;
 let isError = false;
@@ -72,7 +73,8 @@ buttons.forEach(button => {
         }
 
         if (buttonNumber || buttonNumber === 0) { // button pressed is a number
-            if(result !== null && !operator) resetCalculator();
+            if (result !== null && !operator) resetCalculator();
+            if (displayText.length === displayLimit) return;
 
             if (operator) {
                 if (number2.isDecimal) {
@@ -92,9 +94,10 @@ buttons.forEach(button => {
         } 
 
         if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
-
             if (number1.value === null) return;
-    
+            
+            if (operator === null && displayText.length === displayLimit) return;
+            
             if (number2.value !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
                 calculate();
             } 
@@ -106,6 +109,8 @@ buttons.forEach(button => {
 
         switch (buttonId) {
             case 'decimal': {
+                if (displayText.length === displayLimit) return;
+
                 if (operator && !number2.isDecimal) {
                     number2.isDecimal = true;
                     number2.value ??= 0;
@@ -116,6 +121,8 @@ buttons.forEach(button => {
                 break;
             }
             case 'sign-toggle':
+                if (displayText.length === displayLimit) return;
+
                 if (operator) {
                     number2.sign *= -1;
                 } else {
