@@ -23,6 +23,7 @@ let number2 = {
 const displayLimit = 13; // max # of characters
 let operator = null; // holds operator names (e.g. 'add')
 let result = null;
+let resultString = null;
 let isError = false;
 
 let operators = {
@@ -73,8 +74,8 @@ buttons.forEach(button => {
         }
 
         if (buttonNumber || buttonNumber === 0) { // button pressed is a number
+            if (result === null && displayText.length === displayLimit) return;
             if (result !== null && !operator) resetCalculator();
-            if (displayText.length === displayLimit) return;
 
             if (operator) {
                 if (number2.isDecimal) {
@@ -158,9 +159,11 @@ buttons.forEach(button => {
 
 function createDisplayString() {
     if (isError) return errorMessage;
+    // if (result === Infinity ) return '+ Too Big!';
+    // if (result === -Infinity ) return '- Too Big!';
 
     const operatorSymbol = operator ? operators[operator].symbol : '';
-    const number1String = createNumberString(number1);
+    const number1String = resultString ?? createNumberString(number1);
     const number2String = createNumberString(number2);
 
     if (number2.sign < 0) {
@@ -210,6 +213,7 @@ function resetCalculator() {
     number2.decimalPart = '.';
     operator = null;
     result = null;
+    resultString = null;
     isError = false;
 }
 
@@ -219,6 +223,8 @@ function operate(number1, number2, operatorFn) {
 
 function calculate() {
     result = operate(number1.computedValue(), number2.computedValue(), operators[operator].fn);
+    resultString = createResultString();
+
     [number1.value, number1.decimalPart] = String(result).split('.');
 
     if (!Number.isInteger(result)) {
@@ -236,3 +242,74 @@ function calculate() {
     number2.isDecimal = false;
     number2.decimalPart = '.';
 }
+
+
+
+function createResultString() {
+    const absResult = Math.abs(result);
+    const isNegative = result < 0;
+    const isDecimal = !Number.isInteger(result);
+    let precision = displayLimit;
+    let resultString = String(result);
+    let fractionDigits;
+
+    // Handle errors
+    // if absResult === Infinity, throw error
+    // if |num| < Number.MIN_VALUE -> result will be 0 -> throw warning message ?
+
+    if (resultString.length <= displayLimit) return resultString;
+
+    if (absResult > 1 && absResult < ('1e+' + displayLimit)) {
+        // reduce the precision by 1 if the number contains a decimal or is negative to account for the '.' and '-' signs
+        if (isDecimal) precision--;
+        if (isNegative) precision--;
+        resultString = parseFloat((result).toPrecision(precision)); // parseFloat used to remove trailing zeros
+
+        return resultString;
+    } 
+
+    // Case: Smallish numbers with up to a few leading zeros -> round result to the last decimal place that fits in the display
+    if (absResult < 1 && absResult >= 0.0001) { // max 4 leading zeros for readability
+        let decimalPlaces = displayLimit - 2; // -2 accounts for the leading '0' and '.' characters
+        if (isNegative) decimalPlaces--;
+
+        return parseFloat((result).toFixed(decimalPlaces));
+    }
+
+    // Case: Very small numbers with many leading zeros -> convert to scientific notation to prevent significant digits from being pushed off display
+    if (absResult < 0.0001) {
+        fractionDigits = displayLimit - 5; // -5 to account for the integer (1), decimal (1), and 'e-n' (3) characters when converting to exponential
+        if (isNegative) fractionDigits--;
+
+        if (absResult < 1e-9 && absResult > 1e-100) {
+            fractionDigits--; // this accounts for an additional character taken up by 'e-nn'
+        } else if (absResult <= 1e-100) {
+            fractionDigits -= 2; // this accounts for 2 additional characters taken up by 'e-nnn'
+        }
+
+        return (result).toExponential(fractionDigits);
+    }
+
+    // CASE: Handle very big numbers
+    let standardFormLimit = '1e+' + displayLimit;
+    if (result >= standardFormLimit) {
+        fractionDigits = displayLimit - 6; // -6 to account for the integer (1), decimal (1), and 'e-nn' (4) characters when converting to exponential
+        if (isNegative) fractionDigits--; 
+        if (result >= 1e+99 ) fractionDigits--; // Account for additional exponent digit ('e-nnn')
+
+        resultString = String((result.toExponential())); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
+        const specifiedExponential = String((result).toExponential(fractionDigits));
+
+        return resultString.length <= specifiedExponential.length ? resultString : specifiedExponential;
+    }
+}
+
+
+
+
+
+
+
+
+
+
