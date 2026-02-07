@@ -119,6 +119,7 @@ buttons.forEach(button => {
                     number2.value ??= 0;
                 } else if (!number1.isDecimal && !String(number1.value).includes('e')) {
                     number1.isDecimal = true;
+                    number1.value ??= 0;
                 }
                 updateDisplay();
                 break;
