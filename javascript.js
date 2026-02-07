@@ -58,8 +58,8 @@ let operators = {
 let operatorSymbols = [operators.add.symbol, operators.subtract.symbol, operators.multiply.symbol, operators.divide.symbol, operators.power.symbol];
 
 const errorMessage = "error";
-
-const display = document.querySelector('.display-text');
+const line1 = document.querySelector('.line-1');
+const line2 = document.querySelector('.line-2');
 const buttons = document.querySelectorAll('button');
 
 buttons.forEach(button => {
@@ -67,15 +67,14 @@ buttons.forEach(button => {
         const buttonId = e.target.id;
         const buttonText = e.target.innerText;
         const buttonNumber = Number(buttonText);
-        const displayText = display.innerText;
 
         if (isError) {
             resetCalculator();
         }
 
         if (buttonNumber || buttonNumber === 0) { // button pressed is a number
-            if (result === null && displayText.length === displayLimit) return;
             if (result !== null && !operator) resetCalculator();
+            if (line2.innerText === displayLimit) return; 
 
             if (operator) {
                 if (number2.isDecimal) {
@@ -90,27 +89,27 @@ buttons.forEach(button => {
                     number1.value = Number((number1.value === null ? '' : number1.value) + buttonText);
                 }
             }
-            display.innerText = createDisplayString();
+            updateDisplay();
             return;
         } 
 
         if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
             if (number1.value === null) return;
             
-            if (operator === null && displayText.length === displayLimit) return;
+            // if (operator === null && line2.innerText.length === displayLimit) return;
             
             if (number2.value !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
                 calculate();
             } 
 
             operator = buttonId;
-            display.innerText = createDisplayString();
+            updateDisplay();
             return;
         }
 
         switch (buttonId) {
             case 'decimal': {
-                if (displayText.length === displayLimit) return;
+                if (line2.innerText.length === displayLimit) return;
 
                 if (operator && !number2.isDecimal) {
                     number2.isDecimal = true;
@@ -118,27 +117,27 @@ buttons.forEach(button => {
                 } else if (!number1.isDecimal) {
                     number1.isDecimal = true;
                 }
-                display.innerText = createDisplayString();
+                updateDisplay();
                 break;
             }
             case 'sign-toggle':
-                if (displayText.length === displayLimit) return;
+                if (line2.innerText.length === displayLimit) return; // Note: fix for when number is max and negative
 
                 if (operator) {
                     number2.sign *= -1;
                 } else {
                     number1.sign *= -1;
                 }
-                display.innerText = createDisplayString();
+                updateDisplay();
                 break;
             case 'equal': 
                 if (number2.value === null) return;
                 calculate();
                 operator = null;
-                display.innerText = createDisplayString();
+                updateDisplay();
                 break;
             case 'backspace':
-                if (displayText === '') return;
+                if (line2.innerText === '') return;
 
                 if (number2.value !== null || number2.sign < 0) {
                     removeLastDigit(number2);
@@ -147,7 +146,7 @@ buttons.forEach(button => {
                 } else {
                     removeLastDigit(number1);
                 }
-                display.innerText = createDisplayString();
+                updateDisplay();
                 break;
             case 'clear':
                 resetCalculator();
@@ -157,19 +156,23 @@ buttons.forEach(button => {
     });
 });
 
-function createDisplayString() {
-    if (isError) return errorMessage;
+function updateDisplay() {
+    if (isError) {
+        line2.textContent = errorMessage;
+    }
     // if (result === Infinity ) return '+ Too Big!';
     // if (result === -Infinity ) return '- Too Big!';
 
     const operatorSymbol = operator ? operators[operator].symbol : '';
     const number1String = resultString ?? createNumberString(number1);
-    const number2String = createNumberString(number2);
+    const number2String = (number2.sign < 0) ? `(${createNumberString(number2)})` : createNumberString(number2);
 
-    if (number2.sign < 0) {
-        return number1String + operatorSymbol + '(' + number2String + ')';
+    if (operator) {
+        line1.textContent = number1String + ' ' + operatorSymbol;
+        line2.textContent = number2String;
     } else {
-        return number1String + operatorSymbol + number2String;
+        line1.textContent = '';
+        line2.textContent = number1String;
     }
 }
 
@@ -202,7 +205,8 @@ function removeLastDigit(number) {
 }
 
 function resetCalculator() {
-    display.innerText = '';
+    line1.innerText = '';
+    line2.innerText = '';
     number1.value = null;
     number1.sign = 1;
     number1.isDecimal = false;
