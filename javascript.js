@@ -74,7 +74,7 @@ buttons.forEach(button => {
 
         if (buttonNumber || buttonNumber === 0) { // button pressed is a number
             if (result !== null && !operator) resetCalculator();
-            if (line2.innerText === displayLimit) return; 
+            if (line2.innerText.length === displayLimit) return; 
 
             if (operator) {
                 if (number2.isDecimal) {
