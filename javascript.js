@@ -286,7 +286,7 @@ function calculate() {
 function createResultDisplayString() {
     const absResult = Math.abs(result);
     const isNegative = result < 0;
-    const isDecimal = !Number.isInteger(result);
+    const isDecimal = String(result).includes('.');
     let precision = displayLimit;
     let resultDisplayString = String(result);
     let fractionDigits;
@@ -326,8 +326,9 @@ function createResultDisplayString() {
 
     // CASE: Handle very big numbers
     let standardFormLimit = '1e+' + displayLimit;
-    if (result >= standardFormLimit) {
+    if (absResult >= standardFormLimit) {
         fractionDigits = displayLimit - 6; // -6 to account for the integer (1), decimal (1), and 'e-nn' (4) characters when converting to exponential
+
         if (isNegative) fractionDigits--; 
         if (result >= 1e+99 ) fractionDigits--; // Account for additional exponent digit ('e-nnn')
 
