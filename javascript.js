@@ -76,13 +76,12 @@ buttons.forEach(button => {
     button.addEventListener('click', (e) => {
         const buttonId = e.target.id;
         const buttonText = e.target.innerText;
-        const buttonNumber = Number(buttonText);
 
         if (isError) {
             resetCalculator();
         }
 
-        if (buttonNumber || buttonNumber === 0) { // button pressed is a number
+        if (isNumber(buttonText)) { // button pressed is a number
             handleNumberInput(buttonText);
             return;
         } 
@@ -114,9 +113,38 @@ buttons.forEach(button => {
 });
 
 document.addEventListener('keydown', (e) => {
+    e.preventDefault();
+
     const keyPressed = e.key;
-    alert(keyPressed);
+    console.log(keyPressed);
+
+    if (isError) {
+        resetCalculator();
+    }
+
+    if (isNumber(keyPressed)) { // button pressed is a number
+        handleNumberInput(keyPressed);
+        return;
+    } 
+
+    switch (keyPressed) {
+        case '.':
+            handleDecimalInput();
+            break;
+        case 'Enter':
+            handleEqualInput();
+            break;                
+        case 'Backspace':
+            handleBackspaceInput();
+            break;
+    }
+        
 });
+
+function isNumber(input) {
+    const isNumber = !Number.isNaN(parseInt(input));
+    return isNumber;
+}
 
 function handleNumberInput(numberInput) {
     if (result !== null && !operator) resetCalculator();
