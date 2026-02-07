@@ -113,8 +113,6 @@ buttons.forEach(button => {
 });
 
 document.addEventListener('keydown', (e) => {
-    e.preventDefault();
-
     const keyPressed = e.key;
     console.log(keyPressed);
 
@@ -131,7 +129,15 @@ document.addEventListener('keydown', (e) => {
         case '.':
             handleDecimalInput();
             break;
+        case '-':
+            if (number1.value === null || (operator && number2.value === null)) { // flip signs only at the start of number inputs
+                handleSignToggleInput();
+            } else {
+                handleOperatorInput('subtract');
+            }
+            break;
         case 'Enter':
+            e.preventDefault();
             handleEqualInput();
             break;                
         case 'Backspace':
@@ -191,7 +197,7 @@ function handleDecimalInput() {
     updateDisplay();
 }
 
-function handleSignToggleInput() {
+function handleSignToggleInput() { 
     if (operator) {
         if (number2.sign > 0 && line2.innerText.length === displayLimit) return;
         number2.sign *= -1;
