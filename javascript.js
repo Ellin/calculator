@@ -83,82 +83,27 @@ buttons.forEach(button => {
         }
 
         if (buttonNumber || buttonNumber === 0) { // button pressed is a number
-            if (result !== null && !operator) resetCalculator();
-            if (line2.innerText.length === displayLimit) return; 
-
-            if (operator) {
-                if (number2.isDecimal) {
-                    number2.decimalPart += buttonText;
-                } else {
-                    number2.value = Number((number2.value === null ? '' : number2.value) + buttonText);
-                }
-            } else {
-                if (number1.isDecimal) {
-                    number1.decimalPart += buttonText;
-                } else {
-                    number1.value = Number((number1.value === null ? '' : number1.value) + buttonText);
-                }
-            }
-            updateDisplay();
+            handleNumberInput(buttonText);
             return;
         } 
 
         if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
-            if (number1.value === null) return;
-            
-            // if (operator === null && line2.innerText.length === displayLimit) return;
-            
-            if (number2.value !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
-                calculate();
-            } 
-
-            operator = buttonId;
-            updateDisplay();
+            handleOperatorInput(buttonId);
             return;
         }
 
         switch (buttonId) {
-            case 'decimal': {
-                if (line2.innerText.length === displayLimit) return;
-
-                // Prevent adding decimal if number contains 'e'. This would cause NaN issues.
-                if (operator && !number2.isDecimal && !String(number2.value).includes('e')) { 
-                    number2.isDecimal = true;
-                    number2.value ??= 0;
-                } else if (!number1.isDecimal && !String(number1.value).includes('e') && !operator) {
-                    number1.isDecimal = true;
-                    number1.value ??= 0;
-                }
-                updateDisplay();
+            case 'decimal':
+                handleDecimalInput();
                 break;
-            }
             case 'sign-toggle':
-                if (operator) {
-                    if (number2.sign > 0 && line2.innerText.length === displayLimit) return;
-                    number2.sign *= -1;
-                } else {
-                    if (number1.sign > 0 && line2.innerText.length === displayLimit) return;
-                    number1.sign *= -1;
-                }
-                updateDisplay();
+                handleSignToggleInput();
                 break;
-            case 'equal': 
-                if (number2.value === null) return;
-                calculate();
-                operator = null;
-                updateDisplay();
-                break;
+            case 'equal':
+                handleEqualInput();
+                break;                
             case 'backspace':
-                if (line2.innerText === '') return;
-
-                if (number2.value !== null || number2.sign < 0) {
-                    removeLastDigit(number2);
-                } else if (operator) {
-                    operator = null;
-                } else {
-                    removeLastDigit(number1);
-                }
-                updateDisplay();
+                handleBackspaceInput();
                 break;
             case 'clear':
                 resetCalculator();
@@ -167,6 +112,88 @@ buttons.forEach(button => {
         
     });
 });
+
+document.addEventListener('keydown', (e) => {
+    const keyPressed = e.key;
+    alert(keyPressed);
+});
+
+function handleNumberInput(numberInput) {
+    if (result !== null && !operator) resetCalculator();
+    if (line2.innerText.length === displayLimit) return; 
+
+    if (operator) {
+        if (number2.isDecimal) {
+            number2.decimalPart += numberInput;
+        } else {
+            number2.value = Number((number2.value === null ? '' : number2.value) + numberInput);
+        }
+    } else {
+        if (number1.isDecimal) {
+            number1.decimalPart += numberInput;
+        } else {
+            number1.value = Number((number1.value === null ? '' : number1.value) + numberInput);
+        }
+    }
+    updateDisplay();
+}
+
+function handleOperatorInput(operatorInput) {
+    if (number1.value === null) return;
+    
+    if (number2.value !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
+        calculate();
+    } 
+
+    operator = operatorInput;
+    updateDisplay();
+}
+
+function handleDecimalInput() {
+    if (line2.innerText.length === displayLimit) return;
+
+    // Prevent adding decimal if number contains 'e'. This would cause NaN issues.
+    if (operator && !number2.isDecimal && !String(number2.value).includes('e')) { 
+        number2.isDecimal = true;
+        number2.value ??= 0;
+    } else if (!number1.isDecimal && !String(number1.value).includes('e') && !operator) {
+        number1.isDecimal = true;
+        number1.value ??= 0;
+    }
+    updateDisplay();
+}
+
+function handleSignToggleInput() {
+    if (operator) {
+        if (number2.sign > 0 && line2.innerText.length === displayLimit) return;
+        number2.sign *= -1;
+    } else {
+        if (number1.sign > 0 && line2.innerText.length === displayLimit) return;
+        number1.sign *= -1;
+    }
+    updateDisplay();
+}
+
+function handleEqualInput() {
+    if (number2.value === null) return;
+    calculate();
+    operator = null;
+    updateDisplay();
+}
+
+function handleBackspaceInput() {
+    if (line2.innerText === '') return;
+
+    if (number2.value !== null || number2.sign < 0) {
+        removeLastDigit(number2);
+    } else if (operator) {
+        operator = null;
+    } else {
+        removeLastDigit(number1);
+    }
+    updateDisplay();
+}
+
 
 function updateDisplay() {
     if (isError) {
