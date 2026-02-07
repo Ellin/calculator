@@ -44,15 +44,21 @@ html {
 
 .display {
     display: flex;
-    align-items: center;
-    height: clamp(5rem, 20vw, 7rem);
-    font-size: clamp(1em, 5vw, 3.2em);
+    flex-direction: column;
+    justify-content: center;
+    height: clamp(6rem, 20vw, 8rem);
     background-color: rgb(231, 255, 253);
     border: 1px solid black;
     text-align: right;
-    padding: 0 0.5em;
+    padding: 0.5em 1em 0;
+    gap: 5px;
 }
 
-.display-text {
-    width: 100%;
+.line-1 {
+    font-size: clamp(1.5em, 3vw, 2em);
+    color: #575757;
+}
+
+.line-2 {
+    font-size: clamp(2em, 5vw, 3.2em);
 }
