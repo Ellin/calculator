@@ -253,11 +253,15 @@ function calculate() {
         errorType = 'infinity';
         return;
     }
-
+ 
     // Test logs
     console.log('true result is');
     console.log(result);
     // -------
+
+    if (Math.abs(result) < Number.EPSILON) { // This prevents JS floating point weirdness, e.g. (0.1 + 0.2) - 0.3 => 5.551115123125783e-17 
+        result = 0;
+    }
 
     const resultString = String(result);
     resultDisplayString = createResultDisplayString();
