@@ -121,11 +121,11 @@ buttons.forEach(button => {
                 break;
             }
             case 'sign-toggle':
-                if (line2.innerText.length === displayLimit) return; // Note: fix for when number is max and negative
-
                 if (operator) {
+                    if (number2.sign > 0 && line2.innerText.length === displayLimit) return;
                     number2.sign *= -1;
                 } else {
+                    if (number1.sign > 0 && line2.innerText.length === displayLimit) return;
                     number1.sign *= -1;
                 }
                 updateDisplay();
