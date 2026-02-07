@@ -22,11 +22,19 @@ let number2 = {
     }
 };
 
+
 const displayLimit = 13; // max # of characters
 let operator = null; // holds operator names (e.g. 'add')
 let result = null;
 let resultDisplayString = null;
 let isError = false;
+let errorType;
+
+const errorMessages = {
+    infinity: 'Number too big!',
+    divisionByZero: `Can't divide by 0`,
+    default: 'Error',
+}
 
 let operators = {
     add: {
@@ -46,6 +54,7 @@ let operators = {
         fn: (x, y) => {
             if (y === 0) {
                 isError = true;
+                errorType = 'divisionByZero';
                 return;
             }
             return x / y;
@@ -59,7 +68,6 @@ let operators = {
 
 let operatorSymbols = [operators.add.symbol, operators.subtract.symbol, operators.multiply.symbol, operators.divide.symbol, operators.power.symbol];
 
-const errorMessage = "error";
 const line1 = document.querySelector('.line-1');
 const line2 = document.querySelector('.line-2');
 const buttons = document.querySelectorAll('button');
@@ -162,10 +170,9 @@ buttons.forEach(button => {
 
 function updateDisplay() {
     if (isError) {
-        line2.textContent = errorMessage;
+        displayErrorMessage();
+        return;
     }
-    // if (result === Infinity ) return '+ Too Big!';
-    // if (result === -Infinity ) return '- Too Big!';
 
     const operatorSymbol = operator ? operators[operator].symbol : '';
     const number1String = resultDisplayString ?? createNumberString(number1);
@@ -178,6 +185,11 @@ function updateDisplay() {
         line1.textContent = '';
         line2.textContent = number1String;
     }
+}
+
+function displayErrorMessage() {
+    line1.textContent = errorMessages[errorType];
+    line2.textContent = errorMessages.default;
 }
 
 function createNumberString(number) {
@@ -230,7 +242,17 @@ function operate(number1, number2, operatorFn) {
 }
 
 function calculate() {
+    // Test logs
+    console.log(`${number1.computedValue()} ${operators[operator].symbol} ${number2.computedValue()}`);
+
     result = operate(number1.computedValue(), number2.computedValue(), operators[operator].fn);
+
+    // Check for errors
+    if (result === Infinity || result === -Infinity) {
+        isError = true;
+        errorType = 'infinity';
+        return;
+    }
 
     // Test logs
     console.log('true result is');
@@ -268,10 +290,6 @@ function createResultDisplayString() {
     let precision = displayLimit;
     let resultDisplayString = String(result);
     let fractionDigits;
-
-    // Handle errors
-    // if absResult === Infinity, throw error
-    // if |num| < Number.MIN_VALUE -> result will be 0 -> throw warning message ?
 
     if (resultDisplayString.length <= displayLimit) return resultDisplayString;
 
