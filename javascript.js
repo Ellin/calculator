@@ -4,9 +4,10 @@ let number1 = {
     value: null,
     sign: 1,
     isDecimal: false,
-    decimalPart: '.', // string
+    decimalPart: '', // string
     computedValue: function() {
-        return Number(this.value + this.decimalPart) * this.sign;
+        const decimal = this.isDecimal ? '.' : '';
+        return Number(this.value + decimal + this.decimalPart) * this.sign;
     }
 };
 
@@ -14,16 +15,17 @@ let number2 = {
     value: null,
     sign: 1,
     isDecimal: false,
-    decimalPart: '.',
+    decimalPart: '',
     computedValue: function() {
-        return Number(this.value + this.decimalPart) * this.sign;
+        const decimal = this.isDecimal ? '.' : '';
+        return Number(this.value + decimal + this.decimalPart) * this.sign;
     }
 };
 
 const displayLimit = 13; // max # of characters
 let operator = null; // holds operator names (e.g. 'add')
 let result = null;
-let resultString = null;
+let resultDisplayString = null;
 let isError = false;
 
 let operators = {
@@ -111,10 +113,11 @@ buttons.forEach(button => {
             case 'decimal': {
                 if (line2.innerText.length === displayLimit) return;
 
-                if (operator && !number2.isDecimal) {
+                // Prevent adding decimal if number contains 'e'. This would cause NaN issues.
+                if (operator && !number2.isDecimal && !String(number2.value).includes('e')) { 
                     number2.isDecimal = true;
                     number2.value ??= 0;
-                } else if (!number1.isDecimal) {
+                } else if (!number1.isDecimal && !String(number1.value).includes('e')) {
                     number1.isDecimal = true;
                 }
                 updateDisplay();
@@ -164,7 +167,7 @@ function updateDisplay() {
     // if (result === -Infinity ) return '- Too Big!';
 
     const operatorSymbol = operator ? operators[operator].symbol : '';
-    const number1String = resultString ?? createNumberString(number1);
+    const number1String = resultDisplayString ?? createNumberString(number1);
     const number2String = (number2.sign < 0) ? `(${createNumberString(number2)})` : createNumberString(number2);
 
     if (operator) {
@@ -178,7 +181,7 @@ function updateDisplay() {
 
 function createNumberString(number) {
     const sign = number.sign < 0 ? '-' : '';
-    const decimalPart = number.isDecimal ? number.decimalPart : '';
+    const decimalPart = number.isDecimal ? ('.' + number.decimalPart) : '';
     const intPart = number.value ?? '';
 
     return sign + intPart + decimalPart;
@@ -187,7 +190,7 @@ function createNumberString(number) {
 function removeLastDigit(number) {
 // if decimal, remove from decimal part
     if (number.isDecimal) {
-        if (number.decimalPart === '.') {
+        if (number.decimalPart === '') {
             number.isDecimal = false;
         } else {
             number.decimalPart = number.decimalPart.slice(0, -1);
@@ -210,14 +213,14 @@ function resetCalculator() {
     number1.value = null;
     number1.sign = 1;
     number1.isDecimal = false;
-    number1.decimalPart = '.';
+    number1.decimalPart = '';
     number2.value = null;
     number2.sign = 1;
     number2.isDecimal = false;
-    number2.decimalPart = '.';
+    number2.decimalPart = '';
     operator = null;
     result = null;
-    resultString = null;
+    resultDisplayString = null;
     isError = false;
 }
 
@@ -227,49 +230,57 @@ function operate(number1, number2, operatorFn) {
 
 function calculate() {
     result = operate(number1.computedValue(), number2.computedValue(), operators[operator].fn);
-    resultString = createResultString();
 
-    [number1.value, number1.decimalPart] = String(result).split('.');
+    // Test logs
+    console.log('true result is');
+    console.log(result);
+    // -------
 
-    if (!Number.isInteger(result)) {
+    const resultString = String(result);
+    resultDisplayString = createResultDisplayString();
+
+    if (resultString.includes('.')) {
+        const [intPart, decimalPart] = resultString.split('.');
+        number1.value = Math.abs(intPart);
         number1.isDecimal = true;
-        number1.decimalPart = '.' + number1.decimalPart; 
+        number1.decimalPart = decimalPart; 
     } else {
+        number1.value = Math.abs(result)
         number1.isDecimal = false;
-        number1.decimalPart = '.';
+        number1.decimalPart = '';
     }
+
     number1.sign = result < 0 ? -1 : 1;
-    number1.value = Math.abs(number1.value);
 
     number2.value = null;
     number2.sign = 1;
     number2.isDecimal = false;
-    number2.decimalPart = '.';
+    number2.decimalPart = '';
 }
 
 
 
-function createResultString() {
+function createResultDisplayString() {
     const absResult = Math.abs(result);
     const isNegative = result < 0;
     const isDecimal = !Number.isInteger(result);
     let precision = displayLimit;
-    let resultString = String(result);
+    let resultDisplayString = String(result);
     let fractionDigits;
 
     // Handle errors
     // if absResult === Infinity, throw error
     // if |num| < Number.MIN_VALUE -> result will be 0 -> throw warning message ?
 
-    if (resultString.length <= displayLimit) return resultString;
+    if (resultDisplayString.length <= displayLimit) return resultDisplayString;
 
     if (absResult > 1 && absResult < ('1e+' + displayLimit)) {
         // reduce the precision by 1 if the number contains a decimal or is negative to account for the '.' and '-' signs
         if (isDecimal) precision--;
         if (isNegative) precision--;
-        resultString = parseFloat((result).toPrecision(precision)); // parseFloat used to remove trailing zeros
+        resultDisplayString = parseFloat((result).toPrecision(precision)); // parseFloat used to remove trailing zeros
 
-        return resultString;
+        return resultDisplayString;
     } 
 
     // Case: Smallish numbers with up to a few leading zeros -> round result to the last decimal place that fits in the display
@@ -301,10 +312,10 @@ function createResultString() {
         if (isNegative) fractionDigits--; 
         if (result >= 1e+99 ) fractionDigits--; // Account for additional exponent digit ('e-nnn')
 
-        resultString = String((result.toExponential())); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
+        resultDisplayString = String((result.toExponential())); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
         const specifiedExponential = String((result).toExponential(fractionDigits));
 
-        return resultString.length <= specifiedExponential.length ? resultString : specifiedExponential;
+        return resultDisplayString.length <= specifiedExponential.length ? resultDisplayString : specifiedExponential;
     }
 }
 
