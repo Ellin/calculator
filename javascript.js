@@ -125,7 +125,7 @@ buttons.forEach(button => {
                 if (operator && !number2.isDecimal && !String(number2.value).includes('e')) { 
                     number2.isDecimal = true;
                     number2.value ??= 0;
-                } else if (!number1.isDecimal && !String(number1.value).includes('e')) {
+                } else if (!number1.isDecimal && !String(number1.value).includes('e') && !operator) {
                     number1.isDecimal = true;
                     number1.value ??= 0;
                 }
