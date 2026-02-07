@@ -126,15 +126,27 @@ document.addEventListener('keydown', (e) => {
     } 
 
     switch (keyPressed) {
-        case '.':
-            handleDecimalInput();
-            break;
         case '-':
             if (number1.value === null || (operator && number2.value === null)) { // flip signs only at the start of number inputs
                 handleSignToggleInput();
             } else {
                 handleOperatorInput('subtract');
             }
+            break;
+        case '+':
+            handleOperatorInput('add');
+            break;
+        case '*':
+            handleOperatorInput('multiply');
+            break;
+        case '/':
+            handleOperatorInput('divide');
+            break;
+        case '^': 
+            handleOperatorInput('power');
+            break;
+        case '.':
+            handleDecimalInput();
             break;
         case 'Enter':
             e.preventDefault();
