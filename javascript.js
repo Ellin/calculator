@@ -114,7 +114,6 @@ buttons.forEach(button => {
 
 document.addEventListener('keydown', (e) => {
     const keyPressed = e.key;
-    console.log(keyPressed);
 
     if (isError) {
         resetCalculator();
@@ -358,37 +357,34 @@ function calculate() {
     number2.decimalPart = '';
 }
 
-
-
 function createResultDisplayString() {
     const absResult = Math.abs(result);
     const isNegative = result < 0;
     const isDecimal = String(result).includes('.');
-    let precision = displayLimit;
+    const biggestStandardFormNumber = Number('1e+' + displayLimit) - 1;
+    const standardFormLimit = isNegative ? (Math.floor(biggestStandardFormNumber / 10)) : biggestStandardFormNumber; // reduce the comparison number by a digit to account for negative sign character
     let resultDisplayString = String(result);
     let fractionDigits;
 
-    if (resultDisplayString.length <= displayLimit) return resultDisplayString;
+    if (resultDisplayString.length <= displayLimit) return resultDisplayString; // No special handling required
+   
+    // Case: Fractional numbers with up to a few leading zeros -> round result to the last decimal place that fits in the display
+    if (isDecimal && (absResult < standardFormLimit) && (absResult >= 0.0001)) { // max 4 leading zeros for readability
+        // Test Log
+        console.log('Case: Fractional number needing rounding');
 
-    if (absResult > 1 && absResult < ('1e+' + displayLimit)) {
-        // reduce the precision by 1 if the number contains a decimal or is negative to account for the '.' and '-' signs
-        if (isDecimal) precision--;
-        if (isNegative) precision--;
-        resultDisplayString = parseFloat((result).toPrecision(precision)); // parseFloat used to remove trailing zeros
-
-        return resultDisplayString;
-    } 
-
-    // Case: Smallish numbers with up to a few leading zeros -> round result to the last decimal place that fits in the display
-    if (absResult < 1 && absResult >= 0.0001) { // max 4 leading zeros for readability
-        let decimalPlaces = displayLimit - 2; // -2 accounts for the leading '0' and '.' characters
+        let numberOfIntegerPlaces = String(parseInt(absResult)).length;
+        let decimalPlaces = Math.max(0, displayLimit - numberOfIntegerPlaces - 1); // -1 for '.' character
         if (isNegative) decimalPlaces--;
 
-        return parseFloat((result).toFixed(decimalPlaces));
+        return parseFloat((result).toFixed(decimalPlaces)); // Warning: parseFloat used to remove trailing zeros, which may be significant
     }
 
     // Case: Very small numbers with many leading zeros -> convert to scientific notation to prevent significant digits from being pushed off display
     if (absResult < 0.0001) {
+        // Test Log
+        console.log('Case: VERY small numbers');
+
         fractionDigits = displayLimit - 5; // -5 to account for the integer (1), decimal (1), and 'e-n' (3) characters when converting to exponential
         if (isNegative) fractionDigits--;
 
@@ -402,23 +398,26 @@ function createResultDisplayString() {
     }
 
     // CASE: Handle very big numbers
-    let standardFormLimit = '1e+' + displayLimit;
-    if (absResult >= standardFormLimit) {
+    if (absResult > standardFormLimit) {
+        // Test Log
+        console.log('Case: BIG NUM');
+
         fractionDigits = displayLimit - 6; // -6 to account for the integer (1), decimal (1), and 'e-nn' (4) characters when converting to exponential
 
-        if (isNegative) fractionDigits--; 
+        if (isNegative) fractionDigits--;
         if (result >= 1e+99 ) fractionDigits--; // Account for additional exponent digit ('e-nnn')
+
+        console.log(fractionDigits);
 
         resultDisplayString = String((result.toExponential())); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
         const specifiedExponential = String((result).toExponential(fractionDigits));
 
-        return resultDisplayString.length <= specifiedExponential.length ? resultDisplayString : specifiedExponential;
+        return (resultDisplayString.length <= specifiedExponential.length) ? resultDisplayString : specifiedExponential;
     }
+
+    // Tests
+    console.log('WARNING: result not handled!');
 }
-
-
-
-
 
 
 
