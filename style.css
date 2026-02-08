@@ -63,3 +63,16 @@ html {
 .line-2 {
     font-size: 2.7rem;
 }
+
+#backspace, #clear {
+    font-size: 2.5rem;
+}
+
+button:focus-visible {
+    outline-color: rgb(0, 132, 255);
+}
+
+button:hover {
+    background-color: rgb(255, 249, 164);
+    cursor: pointer;
+}
