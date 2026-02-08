@@ -9,18 +9,27 @@
 }
 
 html {
-    font-size: 16px;
+    font-size: clamp(12px, 1.5vw, 16px);
 }
 
 .calculator {
-    height: 44rem;
-    aspect-ratio: 0.6;
+    width: 25rem;
+    min-width: 300px;
     background-color: rgb(255, 148, 219);
     border: 2px solid black;
     padding: 3rem 1.5rem;
     border-radius: 25px;
     margin: clamp(0px, 2vw, 1rem);
     font-family: Arial, Helvetica, sans-serif;
+}
+
+@media (max-width: 450px) {
+    html {
+        font-size: clamp(12px, 3.5vw, 14px);
+    }
+    .calculator{
+        width: 95vw;
+    }
 }
 
 .keypad {
