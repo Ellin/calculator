@@ -211,7 +211,7 @@ function handleDecimalInput() {
 
 function handleSignToggleInput() { 
     if (operator) {
-        if (number2.sign > 0 && line2.innerText.length === displayLimit) return;
+        if (number2.sign > 0 && line2.innerText.length > displayLimit - 3) return; // need to reserve at least 3 characters for '(-)' symbols
         number2.sign *= -1;
     } else {
         if (number1.sign > 0 && line2.innerText.length === displayLimit) return;
