@@ -63,7 +63,7 @@ let operatorName = null; // e.g. 'add'
 let result = null;
 let resultDisplayString = null;
 let isError = false;
-let errorType;
+let errorType = null;
 
 // DOM elements
 const displayLineTop = document.querySelector('.line-1');
@@ -304,6 +304,7 @@ function resetCalculator() {
     result = null;
     resultDisplayString = null;
     isError = false;
+    errorType = null;
 }
 
 function resetNumber(number) {
@@ -326,8 +327,8 @@ function calculate() {
     console.log('Unprocessed result is:');
     console.log(result);
 
-    // Check for errors
-    if (result === Infinity || result === -Infinity) {
+    // Check for big number errors
+    if ((result === Infinity || result === -Infinity) && errorType !== 'divisionByZero') {
         isError = true;
         errorType = 'infinity';
         return;
