@@ -1,40 +1,26 @@
 'use strict'
 
 let number1 = {
-    value: null,
+    integerPart: null,
     sign: 1,
-    isDecimal: false,
+    containsDecimal: false,
     decimalPart: '', // string
     computedValue: function() {
-        const decimal = this.isDecimal ? '.' : '';
-        return Number(this.value + decimal + this.decimalPart) * this.sign;
+        const decimal = this.containsDecimal ? '.' : '';
+        return Number(this.integerPart + decimal + this.decimalPart) * this.sign;
     }
 };
 
 let number2 = {
-    value: null,
+    integerPart: null,
     sign: 1,
-    isDecimal: false,
+    containsDecimal: false,
     decimalPart: '',
     computedValue: function() {
-        const decimal = this.isDecimal ? '.' : '';
-        return Number(this.value + decimal + this.decimalPart) * this.sign;
+        const decimal = this.containsDecimal ? '.' : '';
+        return Number(this.integerPart + decimal + this.decimalPart) * this.sign;
     }
 };
-
-
-const displayLimit = 13; // max # of characters
-let operator = null; // holds operator names (e.g. 'add')
-let result = null;
-let resultDisplayString = null;
-let isError = false;
-let errorType;
-
-const errorMessages = {
-    infinity: 'Number too big!',
-    divisionByZero: `Can't divide by 0`,
-    default: 'Error',
-}
 
 let operators = {
     add: {
@@ -55,7 +41,6 @@ let operators = {
             if (y === 0) {
                 isError = true;
                 errorType = 'divisionByZero';
-                return;
             }
             return x / y;
         },
@@ -66,12 +51,26 @@ let operators = {
     },
 };
 
-let operatorSymbols = [operators.add.symbol, operators.subtract.symbol, operators.multiply.symbol, operators.divide.symbol, operators.power.symbol];
+const errorMessages = {
+    infinity: 'Number too big!',
+    divisionByZero: `Can't divide by 0`,
+    default: 'Error',
+}
 
-const line1 = document.querySelector('.line-1');
-const line2 = document.querySelector('.line-2');
+const displayLimit = 13; // max # of characters
+
+let operatorName = null; // e.g. 'add'
+let result = null;
+let resultDisplayString = null;
+let isError = false;
+let errorType;
+
+// DOM elements
+const displayLineTop = document.querySelector('.line-1');
+const displayLineBottom = document.querySelector('.line-2');
 const buttons = document.querySelectorAll('button');
 
+// Handle button clicks
 buttons.forEach(button => {
     button.addEventListener('click', (e) => {
         const buttonId = e.target.id;
@@ -81,16 +80,19 @@ buttons.forEach(button => {
             resetCalculator();
         }
 
-        if (isNumber(buttonText)) { // button pressed is a number
+        // Number button clicked
+        if (isNumber(buttonText)) {
             handleNumberInput(buttonText);
             return;
         } 
 
-        if (operators.hasOwnProperty(buttonId)) { // button pressed is an operator
+        // Operator button clicked
+        if (operators.hasOwnProperty(buttonId)) { 
             handleOperatorInput(buttonId);
             return;
         }
 
+        // Other button clicked
         switch (buttonId) {
             case 'decimal':
                 handleDecimalInput();
@@ -108,10 +110,11 @@ buttons.forEach(button => {
                 resetCalculator();
                 break;
         }
-        
     });
 });
 
+
+// Keyboard support
 document.addEventListener('keydown', (e) => {
     const keyPressed = e.key;
 
@@ -119,14 +122,14 @@ document.addEventListener('keydown', (e) => {
         resetCalculator();
     }
 
-    if (isNumber(keyPressed)) { // button pressed is a number
+    if (isNumber(keyPressed)) {
         handleNumberInput(keyPressed);
         return;
     } 
 
     switch (keyPressed) {
         case '-':
-            if (number1.value === null || (operator && number2.value === null)) { // flip signs only at the start of number inputs
+            if (number1.integerPart === null || (operatorName && number2.integerPart === null)) { // flip signs only at the start of number inputs
                 handleSignToggleInput();
             } else {
                 handleOperatorInput('subtract');
@@ -158,87 +161,87 @@ document.addEventListener('keydown', (e) => {
         
 });
 
-function isNumber(input) {
-    const isNumber = !Number.isNaN(parseInt(input));
+function isNumber(inputString) {
+    const isNumber = !Number.isNaN(parseInt(inputString));
     return isNumber;
 }
 
 function handleNumberInput(numberInput) {
-    if (result !== null && !operator) resetCalculator();
-    if (line2.innerText.length === displayLimit) return; 
+    if (result !== null && !operatorName) resetCalculator(); // Reset calculator if number is entered on top of a result without any operations
 
-    if (operator) {
-        if (number2.isDecimal) {
+    if (displayLineBottom.innerText.length === displayLimit) return; 
+
+    if (operatorName) {
+        if (number2.containsDecimal) {
             number2.decimalPart += numberInput;
         } else {
-            number2.value = Number((number2.value === null ? '' : number2.value) + numberInput);
+            number2.integerPart = Number((number2.integerPart === null ? '' : number2.integerPart) + numberInput);
         }
     } else {
-        if (number1.isDecimal) {
+        if (number1.containsDecimal) {
             number1.decimalPart += numberInput;
         } else {
-            number1.value = Number((number1.value === null ? '' : number1.value) + numberInput);
+            number1.integerPart = Number((number1.integerPart === null ? '' : number1.integerPart) + numberInput);
         }
     }
     updateDisplay();
 }
 
-function handleOperatorInput(operatorInput) {
-    if (number1.value === null) return;
+function handleOperatorInput(newOperatorName) {
+    if (number1.integerPart === null) return;
     
-    if (number2.value !== null) { // if there is an existing operator between numbers, calculate the number pair before adding the new operator symbol
+    if (number2.integerPart !== null) { // calculate existing number pairs before adding the new operator symbol
         calculate();
     } 
 
-    operator = operatorInput;
+    operatorName = newOperatorName;
     updateDisplay();
 }
 
 function handleDecimalInput() {
-    if (line2.innerText.length === displayLimit) return;
+    if (displayLineBottom.innerText.length === displayLimit) return;
 
-    // Prevent adding decimal if number contains 'e'. This would cause NaN issues.
-    if (operator && !number2.isDecimal && !String(number2.value).includes('e')) { 
-        number2.isDecimal = true;
-        number2.value ??= 0;
-    } else if (!number1.isDecimal && !String(number1.value).includes('e') && !operator) {
-        number1.isDecimal = true;
-        number1.value ??= 0;
+    // Prevent adding decimal if number is in exponential form. This would cause NaN issues.
+    if (operatorName && !number2.containsDecimal && !String(number2.integerPart).includes('e')) { 
+        number2.containsDecimal = true;
+        number2.integerPart ??= 0;
+    } else if (!number1.containsDecimal && !String(number1.integerPart).includes('e') && !operatorName) {
+        number1.containsDecimal = true;
+        number1.integerPart ??= 0;
     }
     updateDisplay();
 }
 
 function handleSignToggleInput() { 
-    if (operator) {
-        if (number2.sign > 0 && line2.innerText.length > displayLimit - 3) return; // need to reserve at least 3 characters for '(-)' symbols
+    if (operatorName) {
+        if (number2.sign > 0 && displayLineBottom.innerText.length > displayLimit - 3) return; // need to reserve at least 3 characters for '(-)' symbols
         number2.sign *= -1;
     } else {
-        if (number1.sign > 0 && line2.innerText.length === displayLimit) return;
+        if (number1.sign > 0 && displayLineBottom.innerText.length === displayLimit) return;
         number1.sign *= -1;
     }
     updateDisplay();
 }
 
 function handleEqualInput() {
-    if (number2.value === null) return;
+    if (number2.integerPart === null) return;
     calculate();
-    operator = null;
+    operatorName = null;
     updateDisplay();
 }
 
 function handleBackspaceInput() {
-    if (line2.innerText === '') return;
+    if (displayLineBottom.innerText === '') return;
 
-    if (number2.value !== null || number2.sign < 0) {
-        removeLastDigit(number2);
-    } else if (operator) {
-        operator = null;
+    if (number2.integerPart !== null || number2.sign < 0) {
+        removeLastCharacter(number2);
+    } else if (operatorName) {
+        operatorName = null;
     } else {
-        removeLastDigit(number1);
+        removeLastCharacter(number1);
     }
     updateDisplay();
 }
-
 
 function updateDisplay() {
     if (isError) {
@@ -246,64 +249,64 @@ function updateDisplay() {
         return;
     }
 
-    const operatorSymbol = operator ? operators[operator].symbol : '';
+    const operatorSymbol = operatorName ? operators[operatorName].symbol : '';
     const number1String = resultDisplayString ?? createNumberString(number1);
     const number2String = (number2.sign < 0) ? `(${createNumberString(number2)})` : createNumberString(number2);
 
-    if (operator) {
-        line1.textContent = number1String + ' ' + operatorSymbol;
-        line2.textContent = number2String;
+    if (operatorName) {
+        displayLineTop.textContent = number1String + ' ' + operatorSymbol;
+        displayLineBottom.textContent = number2String;
     } else {
-        line1.textContent = '';
-        line2.textContent = number1String;
+        displayLineTop.textContent = '';
+        displayLineBottom.textContent = number1String;
     }
 }
 
 function displayErrorMessage() {
-    line1.textContent = errorMessages[errorType];
-    line2.textContent = errorMessages.default;
+    displayLineTop.textContent = errorMessages[errorType];
+    displayLineBottom.textContent = errorMessages.default;
 }
 
 function createNumberString(number) {
     const sign = number.sign < 0 ? '-' : '';
-    const decimalPart = number.isDecimal ? ('.' + number.decimalPart) : '';
-    const intPart = number.value ?? '';
+    const decimalPart = number.containsDecimal ? ('.' + number.decimalPart) : '';
+    const intPart = number.integerPart ?? '';
+    const numberString = sign + intPart + decimalPart;
 
-    return sign + intPart + decimalPart;
+    return numberString;
 }
 
-function removeLastDigit(number) {
-// if decimal, remove from decimal part
-    if (number.isDecimal) {
+function removeLastCharacter(number) {
+    if (number.containsDecimal) {
         if (number.decimalPart === '') {
-            number.isDecimal = false;
+            number.containsDecimal = false;
         } else {
             number.decimalPart = number.decimalPart.slice(0, -1);
         }
         return;
     } 
 
-    if (number.value === null && number.sign < 0) { // last digit is '-'
+    if (number.integerPart === null && number.sign < 0) {
         number.sign = 1;
-    } else if (number.value >= 0 && number.value < 10) {
-        number.value = null;
+    } else if (number.integerPart >= 0 && number.integerPart < 10) {
+        number.integerPart = null;
     } else {
-        number.value = Number(number.value.toString().slice(0, -1));
+        number.integerPart = Number(number.integerPart.toString().slice(0, -1));
     }
 }
 
 function resetCalculator() {
-    line1.innerText = '';
-    line2.innerText = '';
-    number1.value = null;
+    displayLineTop.innerText = '';
+    displayLineBottom.innerText = '';
+    number1.integerPart = null;
     number1.sign = 1;
-    number1.isDecimal = false;
+    number1.containsDecimal = false;
     number1.decimalPart = '';
-    number2.value = null;
+    number2.integerPart = null;
     number2.sign = 1;
-    number2.isDecimal = false;
+    number2.containsDecimal = false;
     number2.decimalPart = '';
-    operator = null;
+    operatorName = null;
     result = null;
     resultDisplayString = null;
     isError = false;
@@ -314,10 +317,12 @@ function operate(number1, number2, operatorFn) {
 }
 
 function calculate() {
-    // Test logs
-    console.log(`${number1.computedValue()} ${operators[operator].symbol} ${number2.computedValue()}`);
+    result = operate(number1.computedValue(), number2.computedValue(), operators[operatorName].fn);
 
-    result = operate(number1.computedValue(), number2.computedValue(), operators[operator].fn);
+    // Tests: Show unprocessed result in console 
+    console.log(`${number1.computedValue()} ${operators[operatorName].symbol} ${number2.computedValue()}`);
+    console.log('Unprocessed result is:');
+    console.log(result);
 
     // Check for errors
     if (result === Infinity || result === -Infinity) {
@@ -325,13 +330,8 @@ function calculate() {
         errorType = 'infinity';
         return;
     }
- 
-    // Test logs
-    console.log('true result is');
-    console.log(result);
-    // -------
 
-    if (Math.abs(result) < Number.EPSILON) { // This prevents JS floating point weirdness, e.g. (0.1 + 0.2) - 0.3 => 5.551115123125783e-17 
+    if (Math.abs(result) < Number.EPSILON) { // Treat numbers less than epsilon as 0 to prevent floating point weirdness, e.g. (0.1 + 0.2) - 0.3 => 5.551115123125783e-17 
         result = 0;
     }
 
@@ -340,27 +340,27 @@ function calculate() {
 
     if (resultString.includes('.')) {
         const [intPart, decimalPart] = resultString.split('.');
-        number1.value = Math.abs(intPart);
-        number1.isDecimal = true;
+        number1.integerPart = Math.abs(intPart);
+        number1.containsDecimal = true;
         number1.decimalPart = decimalPart; 
     } else {
-        number1.value = Math.abs(result)
-        number1.isDecimal = false;
+        number1.integerPart = Math.abs(result)
+        number1.containsDecimal = false;
         number1.decimalPart = '';
     }
 
     number1.sign = result < 0 ? -1 : 1;
 
-    number2.value = null;
+    number2.integerPart = null;
     number2.sign = 1;
-    number2.isDecimal = false;
+    number2.containsDecimal = false;
     number2.decimalPart = '';
 }
 
 function createResultDisplayString() {
     const absResult = Math.abs(result);
     const isNegative = result < 0;
-    const isDecimal = String(result).includes('.');
+    const containsDecimal = String(result).includes('.');
     const biggestStandardFormNumber = Number('1e+' + displayLimit) - 1;
     const standardFormLimit = isNegative ? (Math.floor(biggestStandardFormNumber / 10)) : biggestStandardFormNumber; // reduce the comparison number by a digit to account for negative sign character
     let resultDisplayString = String(result);
@@ -369,7 +369,7 @@ function createResultDisplayString() {
     if (resultDisplayString.length <= displayLimit) return resultDisplayString; // No special handling required
    
     // Case: Fractional numbers with up to a few leading zeros -> round result to the last decimal place that fits in the display
-    if (isDecimal && (absResult < standardFormLimit) && (absResult >= 0.0001)) { // max 4 leading zeros for readability
+    if (containsDecimal && (absResult < standardFormLimit) && (absResult >= 0.0001)) { // max 4 leading zeros for readability
         // Test Log
         console.log('Case: Fractional number needing rounding');
 
@@ -418,9 +418,3 @@ function createResultDisplayString() {
     // Tests
     console.log('WARNING: result not handled!');
 }
-
-
-
-
-
-
