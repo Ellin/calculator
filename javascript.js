@@ -298,19 +298,21 @@ function removeLastCharacter(number) {
 function resetCalculator() {
     displayLineTop.innerText = '';
     displayLineBottom.innerText = '';
-    number1.integerPart = null;
-    number1.sign = 1;
-    number1.containsDecimal = false;
-    number1.decimalPart = '';
-    number2.integerPart = null;
-    number2.sign = 1;
-    number2.containsDecimal = false;
-    number2.decimalPart = '';
+    resetNumber(number1);
+    resetNumber(number2);
     operatorName = null;
     result = null;
     resultDisplayString = null;
     isError = false;
 }
+
+function resetNumber(number) {
+    number.integerPart = null;
+    number.sign = 1;
+    number.containsDecimal = false;
+    number.decimalPart = '';
+}
+
 
 function operate(number1, number2, operatorFn) {
     return operatorFn(number1, number2);
@@ -351,10 +353,7 @@ function calculate() {
 
     number1.sign = result < 0 ? -1 : 1;
 
-    number2.integerPart = null;
-    number2.sign = 1;
-    number2.containsDecimal = false;
-    number2.decimalPart = '';
+    resetNumber(number2);
 }
 
 function createResultDisplayString() {
