@@ -1,10 +1,10 @@
 'use strict'
 
 let number1 = {
-    integerPart: null,
+    integerPart: '', // type: string
     sign: 1,
     containsDecimal: false,
-    decimalPart: '', // string
+    decimalPart: '', // type: string
     computedValue: function() {
         const decimal = this.containsDecimal ? '.' : '';
         return Number(this.integerPart + decimal + this.decimalPart) * this.sign;
@@ -12,7 +12,7 @@ let number1 = {
 };
 
 let number2 = {
-    integerPart: null,
+    integerPart: '',
     sign: 1,
     containsDecimal: false,
     decimalPart: '',
@@ -129,7 +129,7 @@ document.addEventListener('keydown', (e) => {
 
     switch (keyPressed) {
         case '-':
-            if (number1.integerPart === null || (operatorName && number2.integerPart === null)) { // flip signs only at the start of number inputs
+            if (!number1.integerPart || (operatorName && !number2.integerPart)) { // flip signs only at the start of number inputs
                 handleSignToggleInput();
             } else {
                 handleOperatorInput('subtract');
@@ -175,22 +175,22 @@ function handleNumberInput(numberInput) {
         if (number2.containsDecimal) {
             number2.decimalPart += numberInput;
         } else {
-            number2.integerPart = Number((number2.integerPart === null ? '' : number2.integerPart) + numberInput);
+            number2.integerPart += numberInput;
         }
     } else {
         if (number1.containsDecimal) {
             number1.decimalPart += numberInput;
         } else {
-            number1.integerPart = Number((number1.integerPart === null ? '' : number1.integerPart) + numberInput);
+            number1.integerPart += numberInput;
         }
     }
     updateDisplay();
 }
 
 function handleOperatorInput(newOperatorName) {
-    if (number1.integerPart === null) return;
+    if (!number1.integerPart) return;
     
-    if (number2.integerPart !== null) { // calculate existing number pairs before adding the new operator symbol
+    if (number2.integerPart) { // calculate existing number pairs before adding the new operator symbol
         calculate();
     } 
 
@@ -202,12 +202,12 @@ function handleDecimalInput() {
     if (displayLineBottom.innerText.length === displayLimit) return;
 
     // Prevent adding decimal if number is in exponential form. This would cause NaN issues.
-    if (operatorName && !number2.containsDecimal && !String(number2.integerPart).includes('e')) { 
+    if (operatorName && !number2.containsDecimal && !number2.integerPart.includes('e')) { 
         number2.containsDecimal = true;
-        number2.integerPart ??= 0;
-    } else if (!number1.containsDecimal && !String(number1.integerPart).includes('e') && !operatorName) {
+        number2.integerPart ||= '0';
+    } else if (!number1.containsDecimal && !number1.integerPart.includes('e') && !operatorName) {
         number1.containsDecimal = true;
-        number1.integerPart ??= 0;
+        number1.integerPart ||= '0';
     }
     updateDisplay();
 }
@@ -224,7 +224,7 @@ function handleSignToggleInput() {
 }
 
 function handleEqualInput() {
-    if (number2.integerPart === null) return;
+    if (!number2.integerPart) return;
     calculate();
     operatorName = null;
     updateDisplay();
@@ -233,7 +233,7 @@ function handleEqualInput() {
 function handleBackspaceInput() {
     if (displayLineBottom.innerText === '') return;
 
-    if (number2.integerPart !== null || number2.sign < 0) {
+    if (number2.integerPart || number2.sign < 0) {
         removeLastCharacter(number2);
     } else if (operatorName) {
         operatorName = null;
@@ -269,8 +269,8 @@ function displayErrorMessage() {
 
 function createNumberString(number) {
     const sign = number.sign < 0 ? '-' : '';
-    const decimalPart = number.containsDecimal ? ('.' + number.decimalPart) : '';
-    const intPart = number.integerPart ?? '';
+    const decimalPart = number.containsDecimal ? `.${number.decimalPart}`: ''; 
+    const intPart = number.integerPart;
     const numberString = sign + intPart + decimalPart;
 
     return numberString;
@@ -278,7 +278,7 @@ function createNumberString(number) {
 
 function removeLastCharacter(number) {
     if (number.containsDecimal) {
-        if (number.decimalPart === '') {
+        if (!number.decimalPart) {
             number.containsDecimal = false;
         } else {
             number.decimalPart = number.decimalPart.slice(0, -1);
@@ -286,12 +286,12 @@ function removeLastCharacter(number) {
         return;
     } 
 
-    if (number.integerPart === null && number.sign < 0) {
+    if (!number.integerPart && number.sign < 0) {
         number.sign = 1;
-    } else if (number.integerPart >= 0 && number.integerPart < 10) {
-        number.integerPart = null;
+    } else if (number.integerPart.length === 1) {
+        number.integerPart = '';
     } else {
-        number.integerPart = Number(number.integerPart.toString().slice(0, -1));
+        number.integerPart = number.integerPart.slice(0, -1);
     }
 }
 
@@ -308,12 +308,11 @@ function resetCalculator() {
 }
 
 function resetNumber(number) {
-    number.integerPart = null;
+    number.integerPart = '';
     number.sign = 1;
     number.containsDecimal = false;
     number.decimalPart = '';
 }
-
 
 function operate(number1, number2, operatorFn) {
     return operatorFn(number1, number2);
@@ -347,11 +346,11 @@ function calculate() {
 function updateNumber1(resultString) {
     if (resultString.includes('.')) {
         const [intPart, decimalPart] = resultString.split('.');
-        number1.integerPart = Math.abs(intPart);
+        number1.integerPart = String(Math.abs(intPart));
         number1.containsDecimal = true;
         number1.decimalPart = decimalPart; 
     } else {
-        number1.integerPart = Math.abs(result)
+        number1.integerPart = String(Math.abs(result));
         number1.containsDecimal = false;
         number1.decimalPart = '';
     }
@@ -407,8 +406,6 @@ function createResultDisplayString() {
 
         if (isNegative) fractionDigits--;
         if (result >= 1e+99 ) fractionDigits--; // Account for additional exponent digit ('e-nnn')
-
-        console.log(fractionDigits);
 
         resultDisplayString = String((result.toExponential())); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
         const specifiedExponential = String((result).toExponential(fractionDigits));
