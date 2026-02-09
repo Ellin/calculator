@@ -338,9 +338,13 @@ function calculate() {
         result = 0;
     }
 
-    const resultString = String(result);
     resultDisplayString = createResultDisplayString();
 
+    updateNumber1(String(result));
+    resetNumber(number2);
+}
+
+function updateNumber1(resultString) {
     if (resultString.includes('.')) {
         const [intPart, decimalPart] = resultString.split('.');
         number1.integerPart = Math.abs(intPart);
@@ -351,10 +355,7 @@ function calculate() {
         number1.containsDecimal = false;
         number1.decimalPart = '';
     }
-
     number1.sign = result < 0 ? -1 : 1;
-
-    resetNumber(number2);
 }
 
 function createResultDisplayString() {
