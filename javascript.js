@@ -239,6 +239,12 @@ function handleEqualInput() {
 }
 
 function handleBackspaceInput() {
+    if (result !== null && !operatorName) { // Reset & clear calculator if backspace is entered on top of a result without any operation
+        resetCalculator();
+        updateDisplay();
+        return;
+    } 
+
     if (displayLineBottom.innerText === '') return;
 
     if (number2.integerPart || number2.sign < 0) {
