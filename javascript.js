@@ -1,7 +1,7 @@
 'use strict'
 
 let number1 = {
-    integerPart: '', // type: string
+    integerPart: '0', // type: string
     sign: 1,
     containsDecimal: false,
     decimalPart: '', // type: string
@@ -108,11 +108,11 @@ buttons.forEach(button => {
                 break;
             case 'clear':
                 resetCalculator();
+                updateDisplay();
                 break;
         }
     });
 });
-
 
 // Keyboard support
 document.addEventListener('keydown', (e) => {
@@ -174,12 +174,16 @@ function handleNumberInput(numberInput) {
     if (operatorName) {
         if (number2.containsDecimal) {
             number2.decimalPart += numberInput;
+        } else if (number2.integerPart === '0') {
+            number2.integerPart = numberInput;
         } else {
             number2.integerPart += numberInput;
         }
     } else {
         if (number1.containsDecimal) {
             number1.decimalPart += numberInput;
+        } else if (number1.integerPart === '0') {
+            number1.integerPart = numberInput; // NEW LINE
         } else {
             number1.integerPart += numberInput;
         }
@@ -199,6 +203,7 @@ function handleOperatorInput(newOperatorName) {
 }
 
 function handleDecimalInput() {
+    if (result !== null && !operatorName) resetCalculator(); // Reset calculator if decimal is entered on top of a result without any operation
     if (displayLineBottom.innerText.length === displayLimit) return;
 
     // Prevent adding decimal if number is in exponential form. This would cause NaN issues.
@@ -308,7 +313,7 @@ function resetCalculator() {
 }
 
 function resetNumber(number) {
-    number.integerPart = '';
+    number.integerPart = (number === number1) ? '0' : '';
     number.sign = 1;
     number.containsDecimal = false;
     number.decimalPart = '';
