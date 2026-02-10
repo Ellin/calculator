@@ -47,7 +47,13 @@ let operators = {
     },
     power: {
         symbol: '^',
-        fn: (x, y) => x ** y,
+        fn: (x, y) => {
+            if (x === 0 && y < 0) {
+                isError = true;
+                errorType = 'divisionByZero';
+            }
+            return x ** y;
+        },
     },
 };
 
