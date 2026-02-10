@@ -337,8 +337,7 @@ function calculate() {
         result = 0;
     }
 
-    resultDisplayString = createResultDisplayString();
-
+    updateResultDisplayString();
     updateNumber1(String(result));
     resetNumber(number2);
 }
@@ -357,62 +356,51 @@ function updateNumber1(resultString) {
     number1.sign = result < 0 ? -1 : 1;
 }
 
-function createResultDisplayString() {
+function updateResultDisplayString() {
     const absResult = Math.abs(result);
     const isNegative = result < 0;
-    const containsDecimal = String(result).includes('.');
+    const resultString = String(result); 
+    const containsDecimal = resultString.includes('.');
     const biggestStandardFormNumber = Number('1e+' + displayLimit) - 1;
     const standardFormLimit = isNegative ? (Math.floor(biggestStandardFormNumber / 10)) : biggestStandardFormNumber; // reduce the comparison number by a digit to account for negative sign character
-    let resultDisplayString = String(result);
+    resultDisplayString = resultString;
     let fractionDigits;
 
-    if (resultDisplayString.length <= displayLimit) return resultDisplayString; // No special handling required
+    if (resultDisplayString.length <= displayLimit) return;
    
-    // Case: Fractional numbers with up to a few leading zeros -> round result to the last decimal place that fits in the display
-    if (containsDecimal && (absResult < standardFormLimit) && (absResult >= 0.0001)) { // max 4 leading zeros for readability
-        // Test Log
-        console.log('Case: Fractional number needing rounding');
-
+    // CASE: FRACTIONAL NUMBERS (with up to a few leading zeros) -> round to the last decimal place that fits in the display
+    if (containsDecimal && (absResult < standardFormLimit) && (absResult >= 0.0001)) { // limit = 0.0001 for readability
         let numberOfIntegerPlaces = String(parseInt(absResult)).length;
         let decimalPlaces = Math.max(0, displayLimit - numberOfIntegerPlaces - 1); // -1 for '.' character
         if (isNegative) decimalPlaces--;
 
-        return parseFloat((result).toFixed(decimalPlaces)); // Warning: parseFloat used to remove trailing zeros, which may be significant
+        resultDisplayString = parseFloat((result).toFixed(decimalPlaces)); // Note: parseFloat used to remove trailing zeros, which may be significant
+        return;
     }
 
-    // Case: Very small numbers with many leading zeros -> convert to scientific notation to prevent significant digits from being pushed off display
+    // CASE: VERY SMALL NUM (small in magnitude; practically zero) -> convert to scientific notation to prevent significant digits from being pushed off display
     if (absResult < 0.0001) {
-        // Test Log
-        console.log('Case: VERY small numbers');
-
         fractionDigits = displayLimit - 5; // -5 to account for the integer (1), decimal (1), and 'e-n' (3) characters when converting to exponential
         if (isNegative) fractionDigits--;
+        if (absResult < 1e-9 && absResult >= Number.EPSILON) fractionDigits--;  // account for +1 character taken up by 'e-nn'
 
-        if (absResult < 1e-9 && absResult > 1e-100) {
-            fractionDigits--; // this accounts for an additional character taken up by 'e-nn'
-        } else if (absResult <= 1e-100) {
-            fractionDigits -= 2; // this accounts for 2 additional characters taken up by 'e-nnn'
-        }
-
-        return (result).toExponential(fractionDigits);
+        resultDisplayString = (result).toExponential(fractionDigits);
+        return;
     }
 
-    // CASE: Handle very big numbers
+    // CASE: BIG NUM
     if (absResult > standardFormLimit) {
-        // Test Log
-        console.log('Case: BIG NUM');
-
         fractionDigits = displayLimit - 6; // -6 to account for the integer (1), decimal (1), and 'e-nn' (4) characters when converting to exponential
-
         if (isNegative) fractionDigits--;
-        if (result >= 1e+99 ) fractionDigits--; // Account for additional exponent digit ('e-nnn')
+        if (result >= 1e+99 ) fractionDigits--; // account for +1 exponent digit ('e-nnn')
 
         resultDisplayString = String((result.toExponential())); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
         const specifiedExponential = String((result).toExponential(fractionDigits));
 
-        return (resultDisplayString.length <= specifiedExponential.length) ? resultDisplayString : specifiedExponential;
+        resultDisplayString = (resultDisplayString.length <= specifiedExponential.length) ? resultDisplayString : specifiedExponential;
+        return;
     }
 
     // Tests
-    console.log('WARNING: result not handled!');
+    console.log('⚠️ WARNING: result not handled!');
 }
