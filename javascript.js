@@ -157,8 +157,11 @@ document.addEventListener('keydown', (e) => {
         case 'Backspace':
             handleBackspaceInput();
             break;
+        case 'Escape':
+            resetCalculator();
+            updateDisplay();
+            break;
     }
-        
 });
 
 function isNumber(inputString) {
