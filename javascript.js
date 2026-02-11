@@ -423,13 +423,17 @@ function updateResultDisplayString() {
         if (isNegative) fractionDigits--; // account for negative sign
         if (result >= 1e+99 ) fractionDigits--; // account for +1 exponent digit ('e-nnn')
 
-        resultDisplayString = String(result.toExponential()); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
-        const specifiedExponential = String(result.toExponential(fractionDigits));
-
-        resultDisplayString = resultDisplayString.length <= specifiedExponential.length ? resultDisplayString : specifiedExponential;
+        resultDisplayString = shortenedExponential(fractionDigits);
         return;
     }
 
     // Tests
     console.log('⚠️ WARNING: result not handled!');
+}
+
+function shortenedExponential(fractionDigits) {
+        const defaultExponential = String(result.toExponential()); // not specifying the fraction digits leads excludes trailing 0's
+        const maxExponential = String(result.toExponential(fractionDigits)); 
+
+        return defaultExponential.length <= maxExponential.length ? defaultExponential : maxExponential;
 }
