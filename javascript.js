@@ -381,43 +381,52 @@ function updateResultDisplayString() {
     const isNegative = result < 0;
     const resultString = String(result); 
     const containsDecimal = resultString.includes('.');
-    const biggestStandardFormNumber = Number('1e+' + displayLimit) - 1;
-    const standardFormLimit = isNegative ? (Math.floor(biggestStandardFormNumber / 10)) : biggestStandardFormNumber; // reduce the comparison number by a digit to account for negative sign character
+    const maxIntegerPlaces = displayLimit - Number(isNegative);
+
+    // standardFormLimitMax EXPLANATION:
+    // At or above the standardFormLimitMax, rounding into standard form would cause display overflow
+    // This limit is reduced by a decimal place to account for negative sign character
+    // The -0.5 is applied since rounding up would add an extra decimal place
+    const standardFormLimitMax = (10 ** maxIntegerPlaces) - 0.5; 
+    const standardFormLimitMin = 0.0001; // This limit was chosen for readability of leading 0's. absResult smaller than this  is converted to exponential form.
+
     resultDisplayString = resultString;
-    let fractionDigits;
 
+    // CASE: RESULT FITS DISPLAY AS IS
     if (resultDisplayString.length <= displayLimit) return;
-   
-    // CASE: FRACTIONAL NUMBERS (with up to a few leading zeros) -> round to the last decimal place that fits in the display
-    if (containsDecimal && (absResult < standardFormLimit) && (absResult >= 0.0001)) { // limit = 0.0001 for readability
-        let numberOfIntegerPlaces = String(parseInt(absResult)).length;
-        let decimalPlaces = Math.max(0, displayLimit - numberOfIntegerPlaces - 1); // -1 for '.' character
-        if (isNegative) decimalPlaces--;
 
-        resultDisplayString = parseFloat((result).toFixed(decimalPlaces)); // Note: parseFloat used to remove trailing zeros, which may be significant
+    // CASE: STANDARD FORM FRACTIONAL NUMBERS (with up to a few leading zeros) -> round to the last decimal place that fits in the display
+    if (containsDecimal && (absResult < standardFormLimitMax) && (absResult >= standardFormLimitMin)) { 
+        let integerLength = String(parseInt(absResult)).length;
+        let decimalPlaces = Math.max(0, maxIntegerPlaces - integerLength  - 1); // -1 accounts for decimal character
+
+        resultDisplayString = String(parseFloat(result.toFixed(decimalPlaces))); // Note: parseFloat used to remove trailing zeros, which may be significant
+        
+        console.log(`result display string:  ${resultDisplayString}`);
+        console.log(`character length: ${resultDisplayString.length}`);
         return;
     }
 
     // CASE: VERY SMALL NUM (small in magnitude; practically zero) -> convert to scientific notation to prevent significant digits from being pushed off display
-    if (absResult < 0.0001) {
-        fractionDigits = displayLimit - 5; // -5 to account for the integer (1), decimal (1), and 'e-n' (3) characters when converting to exponential
-        if (isNegative) fractionDigits--;
+    if (absResult < standardFormLimitMin) {
+        let fractionDigits = displayLimit - 5; // -5 to account for the integer (1), decimal (1), and 'e-n' (3) characters when converting to exponential
+        if (isNegative) fractionDigits--; // account for negative sign
         if (absResult < 1e-9 && absResult >= Number.EPSILON) fractionDigits--;  // account for +1 character taken up by 'e-nn'
 
-        resultDisplayString = (result).toExponential(fractionDigits);
+        resultDisplayString = String(result.toExponential(fractionDigits));
         return;
     }
 
     // CASE: BIG NUM
-    if (absResult > standardFormLimit) {
-        fractionDigits = displayLimit - 6; // -6 to account for the integer (1), decimal (1), and 'e-nn' (4) characters when converting to exponential
-        if (isNegative) fractionDigits--;
+    if (absResult >= standardFormLimitMax) {
+        let fractionDigits = displayLimit - 6; // -6 to account for the integer (1), decimal (1), and 'e-nn' (4) characters when converting to exponential
+        if (isNegative) fractionDigits--; // account for negative sign
         if (result >= 1e+99 ) fractionDigits--; // account for +1 exponent digit ('e-nnn')
 
-        resultDisplayString = String((result.toExponential())); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
-        const specifiedExponential = String((result).toExponential(fractionDigits));
+        resultDisplayString = String(result.toExponential()); // not specifying the fraction digits leads to a shorter and more readable result in certain cases by excluding trailing 0's
+        const specifiedExponential = String(result.toExponential(fractionDigits));
 
-        resultDisplayString = (resultDisplayString.length <= specifiedExponential.length) ? resultDisplayString : specifiedExponential;
+        resultDisplayString = resultDisplayString.length <= specifiedExponential.length ? resultDisplayString : specifiedExponential;
         return;
     }
 
