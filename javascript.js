@@ -421,7 +421,7 @@ function updateResultDisplayString() {
     if (absResult >= standardFormLimitMax) {
         let fractionDigits = displayLimit - 6; // -6 to account for the integer (1), decimal (1), and 'e-nn' (4) characters when converting to exponential
         if (isNegative) fractionDigits--; // account for negative sign
-        if (result >= 1e+99 ) fractionDigits--; // account for +1 exponent digit ('e-nnn')
+        if (absResult >= 1e+99 ) fractionDigits--; // account for +1 exponent digit ('e-nnn')
 
         resultDisplayString = shortenedExponential(fractionDigits);
         return;
