@@ -15,6 +15,7 @@ html {
 body {
     display: flex;
     justify-content: center;
+    background-color: #d6f8d1;
 }
 
 .calculator {
