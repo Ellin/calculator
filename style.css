@@ -12,6 +12,11 @@ html {
     font-size: clamp(24px, 5.5vh, 48px);
 }
 
+body {
+    display: flex;
+    justify-content: center;
+}
+
 .calculator {
     height: clamp(400px, 90vh, 800px);
     aspect-ratio: 0.59;
