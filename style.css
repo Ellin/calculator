@@ -15,7 +15,9 @@ html {
 .calculator {
     height: clamp(400px, 90vh, 800px);
     aspect-ratio: 0.59;
-    background-color: rgb(255, 148, 219);
+    background: linear-gradient(to bottom, #ff94db, #f55ec3);
+    box-shadow: 5px 5px 15px rgb(201, 180, 192);
+    /* background-color: rgb(255, 148, 219); */
     border: 2px solid black;
     padding: 1.2rem 0.6rem;
     border-radius: 25px;
@@ -49,7 +51,7 @@ html {
     flex: 1;
     aspect-ratio: 1;
     font-size: 1rem;
-    background-color: rgb(255, 255, 193);
+    background: linear-gradient(to bottom, #ffffc1, #ffffa8);
     border-radius: 15px;
     border: 2px solid black;
 }
@@ -84,6 +86,6 @@ button:focus-visible {
 }
 
 button:hover {
-    background-color: rgb(255, 249, 164);
+    filter: brightness(0.96);
     cursor: pointer;
 }
