@@ -353,8 +353,10 @@ function calculate() {
         return;
     }
 
-    if (Math.abs(result) < Number.EPSILON) { // Treat numbers less than epsilon as 0 to prevent floating point weirdness, e.g. (0.1 + 0.2) - 0.3 => 5.551115123125783e-17 
-        result = 0;
+    //  Round small decimal numbers to 15 significant digits to prevent floating point weirdness, e.g. (0.1 + 0.2) - 0.3 => 5.551115123125783e-17 
+    if (Math.abs(result) < 1) {
+        let significantDigits = 15;
+        result = Number(result.toPrecision(significantDigits));
     }
 
     updateResultDisplayString();
@@ -411,7 +413,8 @@ function updateResultDisplayString() {
     if (absResult < standardFormLimitMin) {
         let fractionDigits = displayLimit - 5; // -5 to account for the integer (1), decimal (1), and 'e-n' (3) characters when converting to exponential
         if (isNegative) fractionDigits--; // account for negative sign
-        if (absResult < 1e-9 && absResult >= Number.EPSILON) fractionDigits--;  // account for +1 character taken up by 'e-nn'
+        if (absResult < 1e-9) fractionDigits--;  // +1 character in exponent -> 'e-nn'
+        if (absResult <= 1e-100) fractionDigits-- ; // +1 character in exponent -> 'e-nnn'
 
         resultDisplayString = String(result.toExponential(fractionDigits));
         return;
