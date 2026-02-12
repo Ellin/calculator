@@ -9,44 +9,46 @@
 }
 
 html {
-    font-size: clamp(12px, 1.5vw, 16px);
+    font-size: clamp(24px, 5.5vh, 48px);
 }
 
 .calculator {
-    width: 25rem;
-    min-width: 300px;
+    height: clamp(400px, 90vh, 800px);
+    aspect-ratio: 0.59;
     background-color: rgb(255, 148, 219);
     border: 2px solid black;
-    padding: 3rem 1.5rem;
+    padding: 1.2rem 0.6rem;
     border-radius: 25px;
-    margin: clamp(0px, 2vw, 1rem);
+    margin: 0.2rem;
     font-family: Arial, Helvetica, sans-serif;
 }
 
 @media (max-width: 450px) {
     html {
-        font-size: clamp(12px, 3.5vw, 14px);
+        font-size: clamp(36px, 10vw, 44px);
     }
     .calculator{
-        width: 95vw;
+        width: max(350px, 95vw);
+        aspect-ratio: 0.58;
+        height: auto;
     }
 }
 
 .keypad {
-    margin-top: 2em;
+    margin-top: 0.8rem;
 }
 
 .keypad-row {
-    margin: 0.5em 0;
+    margin: 0.1rem 0;
     display: flex;
     flex-direction: row;
-    gap: 0.5em;
+    gap: 0.2rem;
 }
 
 .calculator button {
     flex: 1;
     aspect-ratio: 1;
-    font-size: 2.7rem;
+    font-size: 1rem;
     background-color: rgb(255, 255, 193);
     border-radius: 15px;
     border: 2px solid black;
@@ -60,21 +62,21 @@ html {
     background-color: rgb(231, 255, 253);
     border: 2px solid black;
     text-align: right;
-    padding: 0.5em 1em 0;
-    gap: 5px;
+    padding: 0.2rem 0.4rem 0;
+    gap: 0.1rem;
 }
 
 .line-1 {
-    font-size: 1.5rem;
+    font-size: 0.6rem;
     color: #575757;
 }
 
 .line-2 {
-    font-size: 2.7rem;
+    font-size: 1rem;
 }
 
 #backspace, #clear {
-    font-size: 2.5rem;
+    font-size: 0.9rem;
 }
 
 button:focus-visible {
