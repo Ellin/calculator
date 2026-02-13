@@ -29,7 +29,11 @@ let operators = {
     },
     subtract: {
         symbol: '-',
-        fn: (x, y) => x - y,
+        fn: (x, y) => {
+            let difference = x - y;
+            let errorMargin = Number.EPSILON * Math.max(1, Math.abs(x), Math.abs(y)); // account for floating point errors, e.g. (0.1 + 0.2) - 0.3 => 5.551115123125783e-17 
+            return Math.abs(difference) < errorMargin ? 0 : difference;
+        },
     },
     multiply: {
         symbol: '×',
@@ -353,7 +357,7 @@ function calculate() {
         return;
     }
 
-    //  Round small decimal numbers to 15 significant digits to prevent floating point weirdness, e.g. (0.1 + 0.2) - 0.3 => 5.551115123125783e-17 
+    //  Round small decimal numbers to 15 significant digits to prevent floating point weirdness, e.g. 0.00001 / 10 => 0.0000010000000000000002
     if (Math.abs(result) < 1) {
         let significantDigits = 15;
         result = Number(result.toPrecision(significantDigits));
