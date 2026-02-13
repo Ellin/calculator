@@ -357,12 +357,6 @@ function calculate() {
         return;
     }
 
-    //  Round small decimal numbers to 15 significant digits to prevent floating point weirdness, e.g. 0.00001 / 10 => 0.0000010000000000000002
-    if (Math.abs(result) < 1) {
-        let significantDigits = 15;
-        result = Number(result.toPrecision(significantDigits));
-    }
-
     updateResultDisplayString();
     updateNumber1(String(result));
     resetNumber(number2);
@@ -394,7 +388,7 @@ function updateResultDisplayString() {
     // This limit is reduced by a decimal place to account for negative sign character
     // The -0.5 is applied since rounding up would add an extra decimal place
     const standardFormLimitMax = (10 ** maxIntegerPlaces) - 0.5; 
-    const standardFormLimitMin = 0.0001; // This limit was chosen for readability of leading 0's. absResult smaller than this  is converted to exponential form.
+    const standardFormLimitMin = 1e-6; // numbers automatically switch to exponential notation when smaller than this
 
     resultDisplayString = resultString;
 
@@ -415,12 +409,15 @@ function updateResultDisplayString() {
 
     // CASE: VERY SMALL NUM (small in magnitude; practically zero) -> convert to scientific notation to prevent significant digits from being pushed off display
     if (absResult < standardFormLimitMin) {
+        let significantDigits = 15;
         let fractionDigits = displayLimit - 5; // -5 to account for the integer (1), decimal (1), and 'e-n' (3) characters when converting to exponential
         if (isNegative) fractionDigits--; // account for negative sign
         if (absResult < 1e-9) fractionDigits--;  // +1 character in exponent -> 'e-nn'
         if (absResult <= 1e-100) fractionDigits-- ; // +1 character in exponent -> 'e-nnn'
 
-        resultDisplayString = String(result.toExponential(fractionDigits));
+        // Limit significant digits to avoid showing potential floating point errors. Converting back to number removes trailing zeros.
+        // e.g. 1 / 10 / 10 => 1.0000000000000002e-7 ->  '1.00000000000000e-7' -> 1e-7
+        resultDisplayString = shortenedExponential(Number(result.toPrecision(significantDigits)), fractionDigits);   
         return;
     }
 
@@ -430,7 +427,7 @@ function updateResultDisplayString() {
         if (isNegative) fractionDigits--; // account for negative sign
         if (absResult >= 1e+99 ) fractionDigits--; // account for +1 exponent digit ('e-nnn')
 
-        resultDisplayString = shortenedExponential(fractionDigits);
+        resultDisplayString = shortenedExponential(result, fractionDigits);
         return;
     }
 
@@ -438,9 +435,9 @@ function updateResultDisplayString() {
     console.log('⚠️ WARNING: result not handled!');
 }
 
-function shortenedExponential(fractionDigits) {
-        const defaultExponential = String(result.toExponential()); // not specifying the fraction digits leads excludes trailing 0's
-        const maxExponential = String(result.toExponential(fractionDigits)); 
+function shortenedExponential(number, fractionDigits) {
+        const defaultExponential = number.toExponential(); // not specifying the fraction digits leads excludes trailing 0's
+        const maxExponential = number.toExponential(fractionDigits); 
 
         return defaultExponential.length <= maxExponential.length ? defaultExponential : maxExponential;
 }
